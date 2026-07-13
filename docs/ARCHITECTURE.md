@@ -1,22 +1,89 @@
-# Transaction
+# Architecture
+
+## Entities
+
+### User
+
+Represents an application user.
+
+Relationships
+
+- One User has many Wallets.
+- One User has many Categories.
+
+---
+
+### Wallet
+
+Represents where the user's money is stored.
+
+Examples
+
+- Cash
+- Enpara
+- Garanti Bonus
+
+Relationships
+
+- Belongs to one User.
+- Has many outgoing Transactions.
+- Has many incoming Transactions.
+
+---
+
+### Category
+
+Represents how transactions are classified.
+
+Examples
+
+- Food
+- Shopping
+- Bills
+- Transport
+
+Relationships
+
+- Belongs to one User.
+- Has many Transactions.
+
+---
+
+### Transaction
+
+Represents a financial movement.
+
+Relationships
+
+- Belongs to one Category (nullable).
+- References one source Wallet (nullable).
+- References one destination Wallet (nullable).
+
+
+Fields
+
 - id
 - amount
 - currency
 - type
 - description
-- merchant
-- category 
-- wallet
+- merchant(nullable)
+- category (nullable)
+- fromWallet(nullable)
+- toWallet(nullable)
 - createdAt
 - updatedAt
 - transactionDate
 
+      
 User
- └── Wallet
-      └── Transaction
-            ├── fromWallet (nullable)
-            ├── toWallet (nullable)
-            └── Categor
+├── Wallet
+├── Category
+│
+└── Transaction
+     ├── fromWallet
+     ├── toWallet
+     └── category
 
 ## Design Decision
 
