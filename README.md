@@ -1,10 +1,10 @@
-# FinPay
+# FinOra
 
 AI-powered Personal Finance Platform.
 
 ## Goal
 
-FinPay is a modern personal finance application that helps users understand and improve their financial habits using artificial intelligence.
+FinOra is a modern personal finance application that helps users understand and improve their financial habits using artificial intelligence.
 
 ## Tech Stack
 
