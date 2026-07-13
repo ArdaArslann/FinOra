@@ -11,6 +11,16 @@ Relationships
 - One User has many Wallets.
 - One User has many Categories.
 
+Fields
+
+- id
+- firstName
+- lastName
+- email
+- password
+- createdAt
+- updatedAt
+
 ---
 
 ### Wallet
@@ -29,6 +39,20 @@ Relationships
 - Has many outgoing Transactions.
 - Has many incoming Transactions.
 
+Wallet
+
+Fields
+
+- id
+- name
+- currency
+- icon
+- archived
+- createdAt
+- updatedAt
+
+Balance is derived from transactions.
+
 ---
 
 ### Category
@@ -46,6 +70,13 @@ Relationships
 
 - Belongs to one User.
 - Has many Transactions.
+
+Fields
+
+- id
+- name
+- createdAt
+- updatedAt
 
 ---
 
