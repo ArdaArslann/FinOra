@@ -5,6 +5,7 @@ import com.finora.auth.dto.LoginResponse;
 import com.finora.auth.dto.RegisterRequest;
 import com.finora.auth.dto.RegisterResponse;
 import com.finora.auth.service.AuthService;
+import com.finora.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,12 +22,18 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
-        return authService.register(registerRequest);
+    public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        return new ApiResponse<>(
+                true,
+                authService.register(registerRequest)
+        );
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
-        return authService.login(loginRequest);
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        return new ApiResponse<>(
+                true,
+                authService.login(loginRequest)
+        );
     }
 }
