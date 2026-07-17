@@ -5,6 +5,7 @@ import com.finora.auth.dto.LoginResponse;
 import com.finora.auth.dto.RegisterRequest;
 import com.finora.auth.dto.RegisterResponse;
 import com.finora.auth.jwt.JwtService;
+import com.finora.common.exception.BusinessException;
 import com.finora.user.entity.UserEntity;
 import com.finora.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.email())) {
-            throw new RuntimeException("E-mail exists");
+            throw new BusinessException("E-mail exists");
         }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.password());
@@ -48,8 +49,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         UserEntity user = userRepository.findByEmail(loginRequest.email())
                 .orElseThrow(()->
-                     new RuntimeException("Invalid email or password")
-                );
+                        new BusinessException("Invalid email or password"));
 
        boolean isPasswordCorrect =  passwordEncoder.matches(
                 loginRequest.password(),
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
            return new LoginResponse(jwtService.generateToken(user));
        }
        else{
-            throw new RuntimeException("Invalid email or password.");
+           throw new BusinessException("Invalid email or password");
        }
     }
 
