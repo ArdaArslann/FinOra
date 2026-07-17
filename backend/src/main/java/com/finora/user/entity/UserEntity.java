@@ -26,7 +26,6 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String password;
 
-
     public static UserEntity create(String firstName, String lastName, String email, String password) {
         UserEntity userEntity = new UserEntity();
         userEntity.email = email;

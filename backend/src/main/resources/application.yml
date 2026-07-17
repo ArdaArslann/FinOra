@@ -2,6 +2,7 @@ spring:
   application:
     name: backend
 
+
   datasource:
     url: jdbc:postgresql://localhost:5432/finora
     username: finora
@@ -20,6 +21,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+jwt:
+  secret: "***REMOVED***"
+  expiration: 3600000
 
 management:
   endpoints:
