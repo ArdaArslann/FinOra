@@ -1,5 +1,7 @@
 package com.finora.auth.controller;
 
+import com.finora.auth.dto.LoginRequest;
+import com.finora.auth.dto.LoginResponse;
 import com.finora.auth.dto.RegisterRequest;
 import com.finora.auth.dto.RegisterResponse;
 import com.finora.auth.service.AuthService;
@@ -21,5 +23,10 @@ public class AuthController {
     @PostMapping("/register")
     public RegisterResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
         return authService.register(registerRequest);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 }
