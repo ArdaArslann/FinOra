@@ -1,5 +1,6 @@
 package com.finora.user.controller;
 
+import com.finora.common.dto.ApiResponse;
 import com.finora.user.dto.UserResponse;
 import com.finora.user.service.UserService;
 import org.springframework.stereotype.Controller;
@@ -19,7 +20,10 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public UserResponse getCurrentUser(){
-        return userService.getCurrentUser();
+    public ApiResponse<UserResponse> getCurrentUser(){
+        return new ApiResponse<>(
+                true,
+                userService.getCurrentUser()
+        );
     }
 }
