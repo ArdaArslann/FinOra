@@ -1,6 +1,6 @@
 package com.finora.auth.dto;
 
 public record LoginResponse(
-        String accesToken
-) {
-}
+        String accessToken,
+        String refreshToken
+){}

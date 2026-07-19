@@ -1,9 +1,6 @@
 package com.finora.auth.controller;
 
-import com.finora.auth.dto.LoginRequest;
-import com.finora.auth.dto.LoginResponse;
-import com.finora.auth.dto.RegisterRequest;
-import com.finora.auth.dto.RegisterResponse;
+import com.finora.auth.dto.*;
 import com.finora.auth.service.AuthService;
 import com.finora.common.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -16,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
+
 
     public AuthController(AuthService authService) {
         this.authService = authService;
@@ -34,6 +32,29 @@ public class AuthController {
         return new ApiResponse<>(
                 true,
                 authService.login(loginRequest)
+        );
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponse<RefreshTokenResponse> refresh(
+            @Valid @RequestBody RefreshTokenRequest request
+    ){
+        return new ApiResponse<>(
+                true,
+                authService.refresh(request)
+        );
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<String> logout(
+            @Valid @RequestBody RefreshTokenRequest request
+    ){
+
+        authService.logout(request.refreshToken());
+
+        return new ApiResponse<>(
+                true,
+                "Logout successful"
         );
     }
 }

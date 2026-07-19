@@ -1,13 +1,10 @@
 package com.finora.auth.service;
 
-import com.finora.auth.dto.LoginRequest;
-import com.finora.auth.dto.LoginResponse;
-import com.finora.auth.dto.RegisterRequest;
-import com.finora.auth.dto.RegisterResponse;
+import com.finora.auth.dto.*;
 
 public interface AuthService {
     RegisterResponse register(RegisterRequest registerRequest);
     LoginResponse login(LoginRequest loginRequest);
-
-
+    RefreshTokenResponse refresh(RefreshTokenRequest request);
+    void logout(String refreshToken);
 }
