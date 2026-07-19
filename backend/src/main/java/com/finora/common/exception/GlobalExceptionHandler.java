@@ -3,8 +3,12 @@ package com.finora.common.exception;
 import com.finora.common.dto.ApiErrorResponse;
 import com.finora.common.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -46,6 +50,39 @@ public class GlobalExceptionHandler {
                 .status(404)
                 .body(
                         ApiResponse.error(error)
+                );
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleValidationException(
+            MethodArgumentNotValidException exception
+    ) {
+
+        Map<String,String> errors = new HashMap<>();
+
+        exception.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errors.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
+                );
+
+
+        ApiErrorResponse apiError = new ApiErrorResponse(
+                "VALIDATION_ERROR",
+                "Validation failed",
+                400
+        );
+
+
+        return ResponseEntity
+                .badRequest()
+                .body(
+                        ApiResponse.validationError(
+                                apiError,
+                                errors
+                        )
                 );
     }
 }
