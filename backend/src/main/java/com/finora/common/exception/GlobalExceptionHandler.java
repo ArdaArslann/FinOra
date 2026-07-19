@@ -1,76 +1,51 @@
 package com.finora.common.exception;
 
 import com.finora.common.dto.ApiErrorResponse;
-import com.finora.common.dto.ValidationErrorResponse;
-import org.springframework.http.HttpStatus;
+import com.finora.common.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
-            ResourceNotFoundException exception
-    ){
-
-        ApiErrorResponse response = new ApiErrorResponse(
-                exception.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
-    }
-
-
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiErrorResponse> handleBusinessException(
+    public ResponseEntity<ApiResponse<Object>> handleBusinessException(
             BusinessException exception
     ){
 
-        ApiErrorResponse response = new ApiErrorResponse(
+        ApiErrorResponse error = new ApiErrorResponse(
+                exception.getCode(),
                 exception.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now()
+                400
         );
 
+
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+                .badRequest()
+                .body(
+                        ApiResponse.error(error)
+                );
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationException(
-            MethodArgumentNotValidException exception
-    ) {
 
-        Map<String, String> errors = exception.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        error -> error.getField(),
-                        error -> error.getDefaultMessage()
-                ));
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(
+            ResourceNotFoundException exception
+    ){
 
-        ValidationErrorResponse response = new ValidationErrorResponse(
-                "Validation failed",
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now(),
-                errors
+        ApiErrorResponse error = new ApiErrorResponse(
+                "RESOURCE_NOT_FOUND",
+                exception.getMessage(),
+                404
         );
 
+
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+                .status(404)
+                .body(
+                        ApiResponse.error(error)
+                );
     }
 }

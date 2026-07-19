@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         UserEntity user = userRepository.findByEmail(email).orElseThrow(() ->
-        new ResourceNotFoundException("User not found"));
+        new ResourceNotFoundException("REFRESH_TOKEN_NOT_FOUND","User not found"));
 
         return new UserResponse(user.getFirstName(),user.getLastName(),user.getEmail(),user.getId());
     }

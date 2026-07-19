@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.email())) {
-            throw new BusinessException("E-mail exists");
+            throw new BusinessException("EMAIL_EXISTS","E-mail exists");
         }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.password());
@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         UserEntity user = userRepository.findByEmail(loginRequest.email())
                 .orElseThrow(()->
-                        new BusinessException("Invalid email or password"));
+                        new BusinessException("INVALID_CREDENTIALS","Invalid email or password"));
 
        boolean isPasswordCorrect =  passwordEncoder.matches(
                 loginRequest.password(),
@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
             );
         }
        else{
-           throw new BusinessException("Invalid email or password");
+           throw new BusinessException("INVALID_CREDENTIALS","Invalid email or password");
        }
     }
 

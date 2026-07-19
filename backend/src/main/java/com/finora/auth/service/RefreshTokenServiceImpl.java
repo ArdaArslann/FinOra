@@ -42,14 +42,14 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         RefreshTokenEntity refreshToken =
                 refreshTokenRepository.findByTokenWithUser(token)
                         .orElseThrow(() ->
-                                new BusinessException("Invalid refresh token")
+                                new BusinessException("INVALID_REFRESH_TOKEN","Invalid refresh token")
                         );
 
 
         if(refreshToken.isExpired()){
             refreshTokenRepository.delete(refreshToken);
 
-            throw new BusinessException("Refresh token expired");
+            throw new BusinessException("INVALID_REFRESH_TOKEN","Refresh token expired");
         }
 
 
@@ -64,7 +64,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 refreshTokenRepository.findByTokenWithUser(token)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Refresh token not found"
+                                        "REFRESH_TOKEN_NOT_FOUND", "Refresh token not found"
                                 ));
 
         refreshTokenRepository.delete(refreshToken);
