@@ -29,7 +29,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.email())) {
-            throw new BusinessException("EMAIL_EXISTS","E-mail exists");
+            throw new BusinessException(
+                    "EMAIL_EXISTS",
+                    "This email is already registered"
+            );
         }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.password());
