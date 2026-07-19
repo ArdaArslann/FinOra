@@ -1,7 +1,18 @@
 package com.finora.common.exception;
 
-public class BusinessException extends RuntimeException{
-    public BusinessException(String message) {
+import lombok.Getter;
+
+@Getter
+public class BusinessException extends RuntimeException {
+
+    private final String code;
+
+
+    public BusinessException(
+            String code,
+            String message
+    ) {
         super(message);
+        this.code = code;
     }
 }

@@ -3,15 +3,14 @@ package com.finora.auth.controller;
 import com.finora.auth.dto.*;
 import com.finora.auth.service.AuthService;
 import com.finora.common.dto.ApiResponse;
+import org.springframework.web.bind.annotation.*;
+
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
     private final AuthService authService;
 
 
@@ -19,41 +18,50 @@ public class AuthController {
         this.authService = authService;
     }
 
+
     @PostMapping("/register")
-    public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        return new ApiResponse<>(
-                true,
-                authService.register(registerRequest)
+    public ApiResponse<RegisterResponse> register(
+            @Valid @RequestBody RegisterRequest request
+    ){
+
+        return ApiResponse.success(
+                authService.register(request)
         );
     }
 
+
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        return new ApiResponse<>(
-                true,
-                authService.login(loginRequest)
+    public ApiResponse<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request
+    ){
+
+        return ApiResponse.success(
+                authService.login(request)
         );
     }
+
 
     @PostMapping("/refresh")
     public ApiResponse<RefreshTokenResponse> refresh(
             @Valid @RequestBody RefreshTokenRequest request
     ){
-        return new ApiResponse<>(
-                true,
+
+        return ApiResponse.success(
                 authService.refresh(request)
         );
     }
+
 
     @PostMapping("/logout")
     public ApiResponse<String> logout(
             @Valid @RequestBody RefreshTokenRequest request
     ){
 
-        authService.logout(request.refreshToken());
+        authService.logout(
+                request.refreshToken()
+        );
 
-        return new ApiResponse<>(
-                true,
+        return ApiResponse.success(
                 "Logout successful"
         );
     }
