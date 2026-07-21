@@ -18,7 +18,7 @@ public abstract class BaseEntity {
     private UUID id;
 
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
