@@ -8,6 +8,7 @@ import com.finora.budget.mapper.BudgetMapper;
 import com.finora.budget.repository.BudgetRepository;
 import com.finora.category.entity.CategoryEntity;
 import com.finora.category.repository.CategoryRepository;
+import com.finora.common.exception.BusinessException;
 import com.finora.common.exception.ResourceNotFoundException;
 import com.finora.common.security.CurrentUserService;
 import com.finora.user.entity.UserEntity;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +29,6 @@ public class BudgetServiceImpl implements BudgetService {
     private final CategoryRepository categoryRepository;
     private final BudgetMapper budgetMapper;
     private final CurrentUserService currentUserService;
-
     @Override
     public BudgetResponse create(CreateBudgetRequest request) {
 
@@ -38,7 +39,16 @@ public class BudgetServiceImpl implements BudgetService {
                 currentUser
         );
 
-        // overlap kontrolü burada gelecek
+        validateDateRange(
+                request.startDate(),
+                request.endDate()
+        );
+
+        validateBudgetOverlapForCreate(
+                category,
+                request.startDate(),
+                request.endDate()
+        );
 
         BudgetEntity budget = budgetMapper.toEntity(
                 request,
@@ -75,7 +85,6 @@ public class BudgetServiceImpl implements BudgetService {
 
         return budgetMapper.toResponse(budget);
     }
-
     @Override
     public BudgetResponse update(
             UUID id,
@@ -90,7 +99,16 @@ public class BudgetServiceImpl implements BudgetService {
         CategoryEntity category =
                 getCategoryOrThrow(request.categoryId(), currentUser);
 
-        // overlap kontrolü burada gelecek
+        validateDateRange(
+                request.startDate(),
+                request.endDate()
+        );
+        validateBudgetOverlapForUpdate(
+                budget.getId(),
+                category,
+                request.startDate(),
+                request.endDate()
+        );
 
         budget.update(
                 request.amount(),
@@ -114,6 +132,62 @@ public class BudgetServiceImpl implements BudgetService {
                 getBudgetOrThrow(id, currentUser);
 
         budgetRepository.delete(budget);
+    }
+
+    private void validateBudgetOverlapForCreate(
+            CategoryEntity category,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        boolean exists = budgetRepository
+                .existsByCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        category,
+                        endDate,
+                        startDate
+                );
+
+        if (exists) {
+            throw new BusinessException(
+                    "BUDGET_OVERLAP",
+                    "A budget already exists for this category in the selected date range."
+            );
+        }
+    }
+
+    private void validateBudgetOverlapForUpdate(
+            UUID budgetId,
+            CategoryEntity category,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        boolean exists = budgetRepository
+                .existsByCategoryAndIdNotAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        category,
+                        budgetId,
+                        endDate,
+                        startDate
+                );
+
+        if (exists) {
+            throw new BusinessException(
+                    "BUDGET_OVERLAP",
+                    "A budget already exists for this category in the selected date range."
+            );
+        }
+    }
+    private void validateDateRange(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+
+        if (startDate.isAfter(endDate)) {
+            throw new BusinessException(
+                    "INVALID_DATE_RANGE",
+                    "Start date cannot be after end date."
+            );
+        }
     }
 
     private BudgetEntity getBudgetOrThrow(
@@ -143,4 +217,6 @@ public class BudgetServiceImpl implements BudgetService {
                                 "Category not found"
                         ));
     }
+
+
 }
