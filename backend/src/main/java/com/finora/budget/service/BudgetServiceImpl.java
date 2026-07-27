@@ -1,6 +1,6 @@
 package com.finora.budget.service;
 
-import com.finora.budget.dto.BudgetResponse;
+import com.finora.budget.dto.BudgetUsageResponse;
 import com.finora.budget.dto.CreateBudgetRequest;
 import com.finora.budget.dto.UpdateBudgetRequest;
 import com.finora.budget.entity.BudgetEntity;
@@ -30,7 +30,7 @@ public class BudgetServiceImpl implements BudgetService {
     private final BudgetMapper budgetMapper;
     private final CurrentUserService currentUserService;
     @Override
-    public BudgetResponse create(CreateBudgetRequest request) {
+    public BudgetUsageResponse create(CreateBudgetRequest request) {
 
         UserEntity currentUser = currentUserService.getCurrentUser();
 
@@ -63,7 +63,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BudgetResponse> getAll() {
+    public List<BudgetUsageResponse> getAll() {
 
         UserEntity currentUser = currentUserService.getCurrentUser();
 
@@ -76,7 +76,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     @Transactional(readOnly = true)
-    public BudgetResponse getById(UUID id) {
+    public BudgetUsageResponse getById(UUID id) {
 
         UserEntity currentUser = currentUserService.getCurrentUser();
 
@@ -86,7 +86,7 @@ public class BudgetServiceImpl implements BudgetService {
         return budgetMapper.toResponse(budget);
     }
     @Override
-    public BudgetResponse update(
+    public BudgetUsageResponse update(
             UUID id,
             UpdateBudgetRequest request
     ) {
