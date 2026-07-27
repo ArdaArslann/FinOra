@@ -1,6 +1,9 @@
 package com.finora.dashboard.service;
 
+import com.finora.budget.entity.BudgetEntity;
+import com.finora.budget.repository.BudgetRepository;
 import com.finora.common.security.CurrentUserService;
+import com.finora.dashboard.dto.BudgetUsageResponse;
 import com.finora.dashboard.dto.DashboardResponse;
 import com.finora.dashboard.dto.DashboardSummaryResponse;
 import com.finora.dashboard.dto.RecentTransactionResponse;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -24,6 +28,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final TransactionRepository transactionRepository;
     private final CurrentUserService currentUserService;
     private final DashboardMapper dashboardMapper;
+    private final BudgetRepository budgetRepository;
 
     @Override
     public DashboardResponse getDashboard() {
@@ -57,11 +62,60 @@ public class DashboardServiceImpl implements DashboardService {
                         .stream()
                         .map(dashboardMapper::toRecentTransactionResponse)
                         .toList();
+
+        List<BudgetUsageResponse> budgetUsages =
+                budgetRepository
+                        .findAllByUserOrderByStartDateDesc(user)
+                        .stream()
+                        .map(this::toBudgetUsageResponse)
+                        .toList();
+
         return new DashboardResponse(
                 summary,
-                List.of(),
+                budgetUsages,
                 recentTransactions,
                 null
+        );
+    }
+
+    private BudgetUsageResponse toBudgetUsageResponse(
+            BudgetEntity budget
+    ) {
+        BigDecimal spent =
+                transactionRepository
+                        .sumAmountByUserAndCategoryAndTypeAndTransactionDateBetween(
+                                budget.getUser(),
+                                budget.getCategory(),
+                                TransactionType.EXPENSE,
+                                budget.getStartDate(),
+                                budget.getEndDate()
+                        );
+        BigDecimal remaining =
+                budget.getAmount().subtract(spent);
+
+        int percentage;
+
+        if (budget.getAmount().compareTo(BigDecimal.ZERO) == 0) {
+            percentage = 0;
+        } else {
+            percentage = spent
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(
+                            budget.getAmount(),
+                            0,
+                            RoundingMode.HALF_UP
+                    )
+                    .intValue();
+        }
+        return new BudgetUsageResponse(
+                budget.getCategory().getId(),
+                budget.getCategory().getName(),
+                budget.getCategory().getIcon(),
+                budget.getCategory().getColor(),
+                budget.getAmount(),
+                spent,
+                remaining,
+                percentage
         );
     }
 

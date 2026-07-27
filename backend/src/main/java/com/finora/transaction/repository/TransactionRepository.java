@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,21 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
     );
 
+    @Query("""
+    SELECT COALESCE(SUM(t.amount), 0)
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.category = :category
+      AND t.type = :type
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+""")
+    BigDecimal sumAmountByUserAndCategoryAndTypeAndTransactionDateBetween(
+            @Param("user") UserEntity user,
+            @Param("category") CategoryEntity category,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
     List<TransactionEntity> findTop5ByUserOrderByTransactionDateDesc(UserEntity user);
 
 }
