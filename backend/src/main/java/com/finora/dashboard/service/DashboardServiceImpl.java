@@ -74,7 +74,7 @@ public class DashboardServiceImpl implements DashboardService {
                 summary,
                 budgetUsages,
                 recentTransactions,
-                null
+                null // TODO: Generate AI-powered financial insights.
         );
     }
 
