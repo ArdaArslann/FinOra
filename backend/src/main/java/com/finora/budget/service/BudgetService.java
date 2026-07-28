@@ -1,6 +1,6 @@
 package com.finora.budget.service;
 
-import com.finora.budget.dto.BudgetUsageResponse;
+import com.finora.budget.dto.BudgetResponse;
 import com.finora.budget.dto.CreateBudgetRequest;
 import com.finora.budget.dto.UpdateBudgetRequest;
 import java.util.List;
@@ -8,13 +8,13 @@ import java.util.UUID;
 
 public interface BudgetService {
 
-    BudgetUsageResponse create(CreateBudgetRequest request);
+    BudgetResponse create(CreateBudgetRequest request);
 
-    List<BudgetUsageResponse> getAll();
+    List<BudgetResponse> getAll();
 
-    BudgetUsageResponse getById(UUID id);
+    BudgetResponse getById(UUID id);
 
-    BudgetUsageResponse update(UUID id, UpdateBudgetRequest request);
+    BudgetResponse update(UUID id, UpdateBudgetRequest request);
 
     void delete(UUID id);
 }
