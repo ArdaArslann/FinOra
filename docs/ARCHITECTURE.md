@@ -1,17 +1,24 @@
 # Architecture
 
+## Overview
+
+FinOra follows a layered architecture based on Clean Architecture and DDD Lite. The domain is organized around core business entities and their relationships.
+
+---
+
 ## Entities
 
 ### User
 
 Represents an application user.
 
-Relationships
+#### Relationships
 
-- One User has many Wallets.
 - One User has many Categories.
+- One User has many Transactions.
+- One User has many Budgets.
 
-Fields
+#### Fields
 
 - id
 - firstName
@@ -23,58 +30,30 @@ Fields
 
 ---
 
-### Wallet
-
-Represents where the user's money is stored.
-
-Examples
-
-- Cash
-- Enpara
-- Garanti Bonus
-
-Relationships
-
-- Belongs to one User.
-- Has many outgoing Transactions.
-- Has many incoming Transactions.
-
-Wallet
-
-Fields
-
-- id
-- name
-- currency
-- icon
-- archived
-- createdAt
-- updatedAt
-
-Balance is derived from transactions.
-
----
-
 ### Category
 
 Represents how transactions are classified.
 
-Examples
+#### Examples
 
 - Food
 - Shopping
 - Bills
-- Transport
+- Transportation
+- Entertainment
 
-Relationships
+#### Relationships
 
 - Belongs to one User.
 - Has many Transactions.
+- Has many Budgets.
 
-Fields
+#### Fields
 
 - id
 - name
+- icon
+- color
 - createdAt
 - updatedAt
 
@@ -84,49 +63,72 @@ Fields
 
 Represents a financial movement.
 
-Relationships
+#### Relationships
 
-- Belongs to one Category (nullable).
-- References one source Wallet (nullable).
-- References one destination Wallet (nullable).
+- Belongs to one User.
+- Belongs to one Category.
 
-
-Fields
+#### Fields
 
 - id
 - amount
-- currency
 - type
 - description
-- merchant(nullable)
-- category (nullable)
-- fromWallet(nullable)
-- toWallet(nullable)
+- transactionDate
+- category
 - createdAt
 - updatedAt
-- transactionDate
 
-      
-User
-├── Wallet
-├── Category
-│
-└── Transaction
-     ├── fromWallet
-     ├── toWallet
-     └── category
-
-## Design Decision
-
-Transactions support three types:
+#### Transaction Types
 
 - Income
 - Expense
-- Transfer
 
-Transfers use both `fromWallet` and `toWallet`.
+---
 
-Income uses only `toWallet`.
+### Budget
 
-Expense uses only `fromWallet`.
- 
+Represents a spending limit for a category during a specific period.
+
+#### Relationships
+
+- Belongs to one User.
+- Belongs to one Category.
+
+#### Fields
+
+- id
+- amount
+- period
+- startDate
+- endDate
+- category
+- createdAt
+- updatedAt
+
+---
+
+## Entity Relationships
+
+```text
+User
+├── Category
+│   ├── Transaction
+│   └── Budget
+│
+├── Transaction
+│
+└── Budget
+```
+
+---
+
+## Design Decisions
+
+- Every entity belongs to a single user.
+- Categories are user-specific.
+- Budgets are defined per category and time period.
+- Transactions are classified by category.
+- Dashboard statistics are calculated dynamically from transactions and budgets.
+- Entity IDs use UUID.
+- Common audit fields (`id`, `createdAt`, `updatedAt`) are inherited from `BaseEntity`.

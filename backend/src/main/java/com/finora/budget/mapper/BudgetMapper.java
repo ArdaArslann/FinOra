@@ -1,6 +1,6 @@
 package com.finora.budget.mapper;
 
-import com.finora.budget.dto.BudgetUsageResponse;
+import com.finora.budget.dto.BudgetResponse;
 import com.finora.budget.dto.CreateBudgetRequest;
 import com.finora.budget.entity.BudgetEntity;
 import com.finora.category.entity.CategoryEntity;
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class BudgetMapper {
 
-    public BudgetUsageResponse toResponse(BudgetEntity entity) {
-        return new BudgetUsageResponse(
+    public BudgetResponse toResponse(BudgetEntity entity) {
+        return new BudgetResponse(
                 entity.getId(),
                 entity.getAmount(),
                 entity.getPeriod(),

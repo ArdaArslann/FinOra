@@ -1,6 +1,6 @@
 package com.finora.budget.controller;
 
-import com.finora.budget.dto.BudgetUsageResponse;
+import com.finora.budget.dto.BudgetResponse;
 import com.finora.budget.dto.CreateBudgetRequest;
 import com.finora.budget.dto.UpdateBudgetRequest;
 import com.finora.budget.service.BudgetService;
@@ -19,26 +19,26 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @PostMapping
-    public BudgetUsageResponse create(
+    public BudgetResponse create(
             @Valid @RequestBody CreateBudgetRequest request
     ) {
         return budgetService.create(request);
     }
 
     @GetMapping
-    public List<BudgetUsageResponse> getAll() {
+    public List<BudgetResponse> getAll() {
         return budgetService.getAll();
     }
 
     @GetMapping("/{id}")
-    public BudgetUsageResponse getById(
+    public BudgetResponse getById(
             @PathVariable UUID id
     ) {
         return budgetService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public BudgetUsageResponse update(
+    public BudgetResponse update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateBudgetRequest request
     ) {

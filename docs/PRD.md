@@ -4,29 +4,31 @@
 
 ## 1. Vision
 
-FinOra is an AI-powered personal finance platform that helps users understand, control and improve their financial habits.
+FinOra is an AI-powered personal finance platform that enables users to manage their personal finances, track income and expenses, create budgets, and gain actionable financial insights through artificial intelligence.
 
 ---
 
 ## 2. Problem
 
-Many people know how much money they spend, but they don't know:
+Many people struggle to understand their financial situation because they:
 
-- where their money goes
-- which categories consume most of their income
-- how to improve their financial habits
+- Don't know where their money goes.
+- Cannot identify unnecessary spending.
+- Have difficulty staying within a budget.
+- Lack personalized financial guidance.
 
 ---
 
 ## 3. Solution
 
-FinOra provides:
+FinOra provides a modern and intelligent finance management experience with:
 
-- Expense tracking
+- Income and expense tracking
 - Budget management
-- Financial analytics
-- AI-powered insights
-- Receipt scanning
+- Interactive financial dashboard
+- AI-powered financial insights
+- Receipt upload and OCR support
+- Spending analytics and reports
 
 ---
 
@@ -35,6 +37,7 @@ FinOra provides:
 - University Students
 - Employees
 - Freelancers
+- Individuals who want to improve their financial habits
 
 ---
 
@@ -42,46 +45,51 @@ FinOra provides:
 
 ### Authentication
 
-- Register
-- Login
+- User Registration
+- User Login
 - JWT Authentication
-
-### Wallets
-
-- Cash
-- Bank Account
-- Credit Card
-
-### Transactions
-
-- Income
-- Expense
-- Transfer
 
 ### Categories
 
-- Food
-- Bills
-- Shopping
-- Transportation
-- Entertainment
+- Create Category
+- Update Category
+- Delete Category
+- List Categories
 
-### Dashboard
+### Transactions
 
-- Monthly Summary
-- Expense Chart
-- Income Chart
+- Create Transaction
+- Update Transaction
+- Delete Transaction
+- List Transactions
+- Income Tracking
+- Expense Tracking
 
 ### Budget
 
 - Monthly Budget
 - Category Budget
+- Budget Usage Tracking
+
+### Dashboard
+
+- Financial Summary
+- Recent Transactions
+- Budget Overview
+
+### API Documentation
+
+- Swagger / OpenAPI
 
 ---
 
 ## 6. Future Features
 
-- AI Chat
-- Receipt OCR
-- Smart Categorization
+- Receipt Upload
+- OCR Receipt Processing
+- AI Financial Insights
+- Smart Expense Categorization
 - Spending Prediction
+- Financial Statistics and Reports
+- Push Notifications
+- Multi-Currency Support
