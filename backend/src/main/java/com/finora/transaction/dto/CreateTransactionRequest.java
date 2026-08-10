@@ -25,7 +25,9 @@ public record CreateTransactionRequest(
         LocalDate transactionDate,
 
         @NotNull
-        UUID categoryId
+        UUID categoryId,
+
+        UUID receiptId
 
 ) {
 }

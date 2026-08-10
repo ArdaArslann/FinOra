@@ -4,6 +4,8 @@ import com.finora.category.entity.CategoryEntity;
 import com.finora.category.repository.CategoryRepository;
 import com.finora.common.exception.ResourceNotFoundException;
 import com.finora.common.security.CurrentUserService;
+import com.finora.receipt.entity.ReceiptEntity;
+import com.finora.receipt.repository.ReceiptRepository;
 import com.finora.transaction.dto.CreateTransactionRequest;
 import com.finora.transaction.dto.TransactionResponse;
 import com.finora.transaction.dto.UpdateTransactionRequest;
@@ -28,24 +30,51 @@ public class TransactionServiceImpl implements TransactionService {
     private final CategoryRepository categoryRepository;
     private final TransactionMapper transactionMapper;
     private final CurrentUserService currentUserService;
+    private final ReceiptRepository receiptRepository;
 
     @Override
-    public TransactionResponse createTransaction(CreateTransactionRequest request) {
+    public TransactionResponse createTransaction(
+            CreateTransactionRequest request
+    ) {
 
-        UserEntity currentUser = currentUserService.getCurrentUser();
+        UserEntity currentUser =
+                currentUserService.getCurrentUser();
 
-        CategoryEntity category = getCategoryOrThrow(
-                request.categoryId(),
-                currentUser
-        );
+        CategoryEntity category =
+                getCategoryOrThrow(
+                        request.categoryId(),
+                        currentUser
+                );
 
-        TransactionEntity transaction = transactionMapper.toEntity(
-                request,
-                category,
-                currentUser
-        );
+        TransactionEntity transaction =
+                transactionMapper.toEntity(
+                        request,
+                        category,
+                        currentUser
+                );
 
-        transaction = transactionRepository.save(transaction);
+        transaction =
+                transactionRepository.save(transaction);
+
+        if (request.receiptId() != null) {
+
+            ReceiptEntity receipt =
+                    receiptRepository
+                            .findByIdAndUser(
+                                    request.receiptId(),
+                                    currentUser
+                            )
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "RECEIPT_NOT_FOUND",
+                                            "Receipt not found"
+                                    )
+                            );
+
+            receipt.assignTransaction(transaction);
+
+            receiptRepository.save(receipt);
+        }
 
         return transactionMapper.toResponse(transaction);
     }

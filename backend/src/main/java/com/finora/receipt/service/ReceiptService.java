@@ -8,7 +8,9 @@ import java.util.UUID;
 
 public interface ReceiptService {
 
-    ReceiptResponse upload(MultipartFile file);
+    ReceiptResponse upload(
+            MultipartFile file
+    );
 
     List<ReceiptResponse> getAll();
 

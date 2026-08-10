@@ -1,12 +1,14 @@
 package com.finora.receipt.entity;
 
 import com.finora.common.entity.BaseEntity;
+import com.finora.common.exception.BusinessException;
 import com.finora.receipt.enums.ReceiptStatus;
 import com.finora.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.finora.transaction.entity.TransactionEntity;
 
 import java.time.LocalDateTime;
 @Entity
@@ -34,6 +36,10 @@ public class ReceiptEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transaction_id")
+    private TransactionEntity transaction;
 
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
@@ -72,4 +78,16 @@ public class ReceiptEntity extends BaseEntity {
     public void updateStatus(ReceiptStatus status) {
         this.status = status;
     }
+    public void assignTransaction(TransactionEntity transaction) {
+
+        if (this.transaction != null) {
+            throw new BusinessException(
+                    "RECEIPT_ALREADY_ASSIGNED",
+                    "Receipt is already assigned to a transaction."
+            );
+        }
+
+        this.transaction = transaction;
+    }
+
 }

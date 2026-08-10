@@ -7,6 +7,7 @@ import com.finora.receipt.dto.ReceiptResponse;
 import com.finora.receipt.entity.ReceiptEntity;
 import com.finora.receipt.mapper.ReceiptMapper;
 import com.finora.receipt.repository.ReceiptRepository;
+import com.finora.transaction.entity.TransactionEntity;
 import com.finora.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
