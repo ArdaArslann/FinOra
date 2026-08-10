@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,6 +84,23 @@ public class GlobalExceptionHandler {
                                 apiError,
                                 errors
                         )
+                );
+    }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException exception
+    ) {
+
+        ApiErrorResponse error = new ApiErrorResponse(
+                "RECEIPT_FILE_TOO_LARGE",
+                "Receipt file size cannot exceed 5 MB.",
+                400
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(
+                        ApiResponse.error(error)
                 );
     }
 }
