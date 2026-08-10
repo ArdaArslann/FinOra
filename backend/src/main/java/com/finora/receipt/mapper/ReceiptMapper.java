@@ -15,7 +15,10 @@ public class ReceiptMapper {
                 receipt.getContentType(),
                 receipt.getFileSize(),
                 receipt.getStatus(),
-                receipt.getUploadedAt()
+                receipt.getUploadedAt(),
+                receipt.getTransaction() != null
+                        ? receipt.getTransaction().getId()
+                        : null
         );
     }
 

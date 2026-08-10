@@ -17,6 +17,8 @@ public record ReceiptResponse(
 
         ReceiptStatus status,
 
-        LocalDateTime uploadedAt
+        LocalDateTime uploadedAt,
+
+        UUID transactionId
 
 ){}
