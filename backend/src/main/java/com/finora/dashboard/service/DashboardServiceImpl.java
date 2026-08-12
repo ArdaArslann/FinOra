@@ -8,6 +8,7 @@ import com.finora.dashboard.dto.DashboardResponse;
 import com.finora.dashboard.dto.DashboardSummaryResponse;
 import com.finora.dashboard.dto.RecentTransactionResponse;
 import com.finora.dashboard.mapper.DashboardMapper;
+import com.finora.dashboard.projection.BudgetSpentProjection;
 import com.finora.transaction.entity.TransactionEntity;
 import com.finora.transaction.enums.TransactionType;
 import com.finora.transaction.repository.TransactionRepository;
@@ -19,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,13 +67,40 @@ public class DashboardServiceImpl implements DashboardService {
                         .map(dashboardMapper::toRecentTransactionResponse)
                         .toList();
 
-        List<BudgetUsageResponse> budgetUsages =
+        List<BudgetEntity> budgets =
                 budgetRepository
-                        .findAllByUserOrderByStartDateDesc(user)
-                        .stream()
-                        .map(this::toBudgetUsageResponse)
-                        .toList();
+                        .findAllByUserOrderByStartDateDesc(user);
 
+        List<BudgetSpentProjection> budgetSpentProjections =
+                transactionRepository.findBudgetSpentByUser(
+                        user,
+                        TransactionType.EXPENSE
+                );
+
+        Map<UUID, BigDecimal> spentByBudgetId =
+                budgetSpentProjections.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        BudgetSpentProjection::budgetId,
+                                        BudgetSpentProjection::spent
+                                )
+                        );
+
+        List<BudgetUsageResponse> budgetUsages =
+                budgets.stream()
+                        .map(budget -> {
+                            BigDecimal spent =
+                                    spentByBudgetId.getOrDefault(
+                                            budget.getId(),
+                                            BigDecimal.ZERO
+                                    );
+
+                            return toBudgetUsageResponse(
+                                    budget,
+                                    spent
+                            );
+                        })
+                        .toList();
         return new DashboardResponse(
                 summary,
                 budgetUsages,
@@ -79,17 +110,10 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private BudgetUsageResponse toBudgetUsageResponse(
-            BudgetEntity budget
+            BudgetEntity budget,
+            BigDecimal spent
     ) {
-        BigDecimal spent =
-                transactionRepository
-                        .sumAmountByUserAndCategoryAndTypeAndTransactionDateBetween(
-                                budget.getUser(),
-                                budget.getCategory(),
-                                TransactionType.EXPENSE,
-                                budget.getStartDate(),
-                                budget.getEndDate()
-                        );
+
         BigDecimal remaining =
                 budget.getAmount().subtract(spent);
 
@@ -107,6 +131,7 @@ public class DashboardServiceImpl implements DashboardService {
                     )
                     .intValue();
         }
+
         return new BudgetUsageResponse(
                 budget.getCategory().getId(),
                 budget.getCategory().getName(),
