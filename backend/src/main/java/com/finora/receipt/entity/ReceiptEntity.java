@@ -90,4 +90,7 @@ public class ReceiptEntity extends BaseEntity {
         this.transaction = transaction;
     }
 
+    public void unassignTransaction() {
+        this.transaction = null;
+    }
 }
