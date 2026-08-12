@@ -1,6 +1,7 @@
 package com.finora.receipt.repository;
 
 import com.finora.receipt.entity.ReceiptEntity;
+import com.finora.transaction.entity.TransactionEntity;
 import com.finora.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,5 +19,9 @@ public interface ReceiptRepository
     Optional<ReceiptEntity> findByIdAndUser(
             UUID id,
             UserEntity user
+    );
+
+    List<ReceiptEntity> findAllByTransaction(
+            TransactionEntity transaction
     );
 }

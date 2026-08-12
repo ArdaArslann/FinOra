@@ -134,10 +134,18 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public void deleteTransaction(UUID id) {
 
-        UserEntity currentUser = currentUserService.getCurrentUser();
+        UserEntity currentUser =
+                currentUserService.getCurrentUser();
 
         TransactionEntity transaction =
                 getTransactionOrThrow(id, currentUser);
+
+        List<ReceiptEntity> receipts =
+                receiptRepository.findAllByTransaction(transaction);
+
+        receipts.forEach(ReceiptEntity::unassignTransaction);
+
+        receiptRepository.saveAll(receipts);
 
         transactionRepository.delete(transaction);
     }
