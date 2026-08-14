@@ -50,6 +50,37 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
+    public byte[] download(String storageKey) {
+
+        try {
+            Path target = uploadDirectory
+                    .resolve(storageKey)
+                    .normalize();
+
+            if (!target.startsWith(uploadDirectory)) {
+                throw new IllegalArgumentException(
+                        "Invalid storage key."
+                );
+            }
+
+            if (!Files.exists(target)) {
+                throw new IllegalArgumentException(
+                        "Receipt file not found."
+                );
+            }
+
+            return Files.readAllBytes(target);
+
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to read receipt file.",
+                    e
+            );
+        }
+    }
+
+
+    @Override
     public void delete(String storageKey) {
 
         try {

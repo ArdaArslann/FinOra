@@ -44,6 +44,14 @@ public class ReceiptEntity extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
+    @OneToOne(
+            mappedBy = "receipt",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private ReceiptExtractionEntity extraction;
+
     private ReceiptEntity(
             String originalFileName,
             String storageKey,
@@ -88,6 +96,12 @@ public class ReceiptEntity extends BaseEntity {
         }
 
         this.transaction = transaction;
+    }
+
+    public void assignExtraction(
+            ReceiptExtractionEntity extraction
+    ) {
+        this.extraction = extraction;
     }
 
     public void unassignTransaction() {

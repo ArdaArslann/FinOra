@@ -19,6 +19,8 @@ public record ReceiptResponse(
 
         LocalDateTime uploadedAt,
 
-        UUID transactionId
+        UUID transactionId,
 
-){}
+        ReceiptExtractionResponse extraction
+
+) {}
