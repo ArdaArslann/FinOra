@@ -22,4 +22,9 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> 
             UUID id,
             UserEntity user
     );
+
+    Optional<CategoryEntity> findByNameIgnoreCaseAndUser(
+            String name,
+            UserEntity user
+    );
 }

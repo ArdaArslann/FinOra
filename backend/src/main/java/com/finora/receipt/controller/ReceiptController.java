@@ -1,9 +1,14 @@
 package com.finora.receipt.controller;
 
+import com.finora.common.dto.ApiResponse;
+import com.finora.receipt.dto.ConfirmReceiptRequest;
 import com.finora.receipt.dto.ReceiptResponse;
 import com.finora.receipt.service.ReceiptService;
+import com.finora.transaction.dto.TransactionResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,4 +48,19 @@ public class ReceiptController {
     ) {
         receiptService.delete(id);
     }
+
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<ApiResponse<TransactionResponse>> confirmReceipt(
+            @PathVariable UUID id,
+            @Valid @RequestBody ConfirmReceiptRequest request
+    ) {
+
+        TransactionResponse response =
+                receiptService.confirmReceipt(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response)
+        );
+    }
+
 }
