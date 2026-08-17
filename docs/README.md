@@ -108,7 +108,7 @@ The project is designed as a portfolio-quality, production-oriented application 
 
 ### Current Focus
 
-- ⏳ Android Application
+- ⏳ Android Application Integration
 
 ## Roadmap
 
@@ -126,4 +126,19 @@ The project is designed as a portfolio-quality, production-oriented application 
 - [x] OpenAI Integration
 - [x] Redis Rate Limiting
 - [x] Statistics & Reports
-- [ ] Android Application
+
+### Android Integration Roadmap
+
+- [ ] 1. Networking foundation (Retrofit, OkHttp, Hilt)
+- [ ] 2. DataStore and TokenManager
+- [ ] 3. Authentication (Register, Login, Refresh, Logout)
+- [ ] 4. Categories (Listing, CRUD)
+- [ ] 5. Transactions (Listing, CRUD)
+- [ ] 6. Budgets (Listing, CRUD, usage)
+- [ ] 7. Dashboard (Overall summary, spending)
+- [ ] 8. Statistics and Reporting (Charts, trends)
+- [ ] 9. Receipt upload and confirmation
+- [ ] 10. AI Insights display
+- [ ] 11. Room local caching
+- [ ] 12. Testing, UX polish, and security review
+

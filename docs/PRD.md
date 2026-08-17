@@ -581,4 +581,23 @@ The following backend capabilities are currently implemented:
 * Dockerized backend environment
 * Redis infrastructure
 
+⸻
 
+## 14. Android Client Integration
+
+### Integration Goals
+
+The Android application is the client for the FinOra REST API. The backend remains the source of truth for authentication, financial data, calculations, and AI insights. The Android app manages presentation, UI state, networking, and local caching.
+
+### Features & Implementation Guidelines
+
+*   **Authentication & Session**: Implement Register and Login flows. Store access/refresh tokens securely (TokenManager via DataStore). Handle 401 Unauthorized by attempting a token refresh once. Never perform automatic login to recover from 401.
+*   **Categories**: Implement category listing and CRUD operations. Handle server-created default categories properly (Android must not create duplicate default categories).
+*   **Transactions**: Implement create, update, delete, detail, and list flows. Refresh relevant UI state from server responses.
+*   **Budgets**: Support budget CRUD, displaying amount, spending, remaining amount, usage percentage, and risk status.
+*   **Dashboard**: Build the dashboard using backend-calculated values (overall income, expenses, balance, recent transactions, category spending, budget overview). Avoid recalculating authoritative totals locally.
+*   **Statistics and Reporting**: Create date-range reports. Render charts for distributions and trends. Handle empty periods gracefully.
+*   **Receipt Upload & Confirmation**: Implement multipart receipt upload showing processing states. Display extracted receipt data for user review (merchant, amount, date, currency, suggested category). Expose a confirmation screen to convert the extraction into a transaction.
+*   **AI Financial Insights**: Consume the structured AI response from the backend to display summaries, monthly financial status, budget insights, and recommendations.
+*   **Error Handling & UI State**: Every screen must explicitly handle Loading, Success, Empty, and Error states. Implement a common API error parser to map codes (e.g., `UNAUTHORIZED`, `INVALID_CREDENTIALS`, `RECEIPT_ALREADY_CONFIRMED`) into user-friendly messages.
+*   **Definition of Done**: A complete integration allows a new user to register, receive default categories, log in, maintain session, manage categories/transactions/budgets, view dashboard/statistics, upload/confirm receipts, and view AI insights. Errors are mapped consistently, and no sensitive information appears in logs.
