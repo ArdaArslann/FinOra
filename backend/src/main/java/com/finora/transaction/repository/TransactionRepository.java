@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.finora.statistics.projection.DailyStatistics;
+import com.finora.statistics.projection.MonthlyStatistics;
+
 public interface TransactionRepository extends JpaRepository<TransactionEntity, UUID> {
 
     List<TransactionEntity> findAllByUserOrderByTransactionDateDesc(UserEntity user);
@@ -89,4 +92,64 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
             @Param("user") UserEntity user,
             @Param("type") TransactionType type
     );
+
+    long countByUserAndTransactionDateBetween(UserEntity user, LocalDate startDate, LocalDate endDate);
+
+    @Query("""
+    SELECT 
+        t.transactionDate,
+        COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE -t.amount END), 0)
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+    GROUP BY t.transactionDate
+    ORDER BY t.transactionDate ASC
+""")
+    List<Object[]> getDailyTrendRaw(
+            @Param("user") UserEntity user,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    default List<DailyStatistics> getDailyTrend(UserEntity user, LocalDate startDate, LocalDate endDate) {
+        return getDailyTrendRaw(user, startDate, endDate).stream()
+                .map(row -> new DailyStatistics(
+                        (LocalDate) row[0],
+                        row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString()),
+                        row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString()),
+                        row[3] == null ? BigDecimal.ZERO : new BigDecimal(row[3].toString())
+                ))
+                .toList();
+    }
+
+    @Query("""
+    SELECT 
+        FUNCTION('TO_CHAR', t.transactionDate, 'YYYY-MM'),
+        COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE -t.amount END), 0)
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+    GROUP BY FUNCTION('TO_CHAR', t.transactionDate, 'YYYY-MM')
+    ORDER BY FUNCTION('TO_CHAR', t.transactionDate, 'YYYY-MM') ASC
+""")
+    List<Object[]> getMonthlyTrendRaw(
+            @Param("user") UserEntity user,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    default List<MonthlyStatistics> getMonthlyTrend(UserEntity user, LocalDate startDate, LocalDate endDate) {
+        return getMonthlyTrendRaw(user, startDate, endDate).stream()
+                .map(row -> new MonthlyStatistics(
+                        (String) row[0],
+                        row[1] == null ? BigDecimal.ZERO : new BigDecimal(row[1].toString()),
+                        row[2] == null ? BigDecimal.ZERO : new BigDecimal(row[2].toString()),
+                        row[3] == null ? BigDecimal.ZERO : new BigDecimal(row[3].toString())
+                ))
+                .toList();
+    }
 }
