@@ -22,424 +22,351 @@ import java.util.Map;
 @Service
 @Primary
 public class GeminiVisionReceiptExtractor
-        implements ReceiptExtractor {
+                implements ReceiptExtractor {
 
-    private final Client client;
-    private final ObjectMapper objectMapper;
-    private final String model;
+        private final Client client;
+        private final ObjectMapper objectMapper;
+        private final String model;
 
-    public GeminiVisionReceiptExtractor(
-            ObjectMapper objectMapper,
-            @Value("${gemini.api-key}") String apiKey,
-            @Value("${gemini.model}") String model
-    ) {
-        this.objectMapper = objectMapper;
-        this.model = model;
+        public GeminiVisionReceiptExtractor(
+                        ObjectMapper objectMapper,
+                        @Value("${gemini.api-key}") String apiKey,
+                        @Value("${gemini.model}") String model) {
+                this.objectMapper = objectMapper;
+                this.model = model;
 
-        this.client = Client.builder()
-                .apiKey(apiKey)
-                .build();
-    }
-
-    @Override
-    public ReceiptExtractionResult extract(
-            byte[] imageData,
-            String contentType
-    ) {
-
-        if (imageData == null
-                || imageData.length == 0) {
-
-            throw new IllegalArgumentException(
-                    "Image data cannot be empty."
-            );
+                this.client = Client.builder()
+                                .apiKey(apiKey)
+                                .build();
         }
 
-        long start =
-                System.currentTimeMillis();
+        @Override
+        public ReceiptExtractionResult extract(
+                        byte[] imageData,
+                        String contentType) {
 
-        
+                if (imageData == null
+                                || imageData.length == 0) {
 
-        try {
+                        throw new IllegalArgumentException(
+                                        "Image data cannot be empty.");
+                }
 
-            return executeRequest(
-                    imageData,
-                    contentType
-            );
+                long start = System.currentTimeMillis();
 
-        } catch (Exception firstException) {
+                try {
 
-            if (!isRetryable(firstException)) {
+                        return executeRequest(
+                                        imageData,
+                                        contentType);
 
-                throw new IllegalStateException(
-                        "Gemini Vision receipt extraction failed.",
-                        firstException
-                );
-            }
+                } catch (Exception firstException) {
 
-            
+                        if (!isRetryable(firstException)) {
 
-            
+                                throw new IllegalStateException(
+                                                "Gemini Vision receipt extraction failed.",
+                                                firstException);
+                        }
 
-            waitBeforeRetry();
+                        waitBeforeRetry();
 
-            try {
+                        try {
 
-                
+                                return executeRequest(
+                                                imageData,
+                                                contentType);
 
-                return executeRequest(
-                        imageData,
-                        contentType
-                );
+                        } catch (Exception secondException) {
 
-            } catch (Exception secondException) {
+                                throw new IllegalStateException(
+                                                "Gemini Vision receipt extraction "
+                                                                + "failed after retry.",
+                                                secondException);
+                        }
 
-                throw new IllegalStateException(
-                        "Gemini Vision receipt extraction "
-                                + "failed after retry.",
-                        secondException
-                );
-            }
+                } finally {
 
-        } finally {
+                        long elapsed = System.currentTimeMillis() - start;
 
-            long elapsed =
-                    System.currentTimeMillis() - start;
-
-            
+                }
         }
-    }
 
-    private ReceiptExtractionResult executeRequest(
-            byte[] imageData,
-            String contentType
-    ) {
+        private ReceiptExtractionResult executeRequest(
+                        byte[] imageData,
+                        String contentType) {
 
-        long requestStart =
-                System.currentTimeMillis();
+                long requestStart = System.currentTimeMillis();
 
-        String prompt = """
-                Bu bir fiş/makbuz fotoğrafıdır.
-                Görseli dikkatlice analiz et ve
-                aşağıdaki bilgileri çıkar.
+                String prompt = """
+                                This is a photo of a receipt/invoice.
+                                Analyze the image carefully and
+                                extract the following information.
 
-                KURALLAR:
+                                RULES:
 
-                1. merchantName — Fişin en üstündeki
-                   mağaza/işletme adı. Büyük veya
-                   kalın yazılmış olabilir.
+                                1. merchantName — The store/business name
+                                   at the top of the receipt. It might be
+                                   written in large or bold text.
 
-                2. totalAmount — Ödenecek toplam tutar.
-                   Öncelik sırası:
-                   - "ÖDENECEK TUTAR" veya "ODENECEK TUTAR"
-                   - "NAKİT" veya "KREDİ KARTI" yanındaki tutar
-                   - "GENEL TOPLAM"
-                   - "TOPLAM"
-                   - "TOTAL"
-                   Tutarı nokta ile ondalık ayırarak yaz.
-                   Örnek: 1500.00, 13.85, 250.99
-                   Binlik ayracı KULLANMA.
+                                2. totalAmount — The total amount to be paid.
+                                   Priority order:
+                                   - "ÖDENECEK TUTAR" or "ODENECEK TUTAR"
+                                   - Amount next to "NAKİT" or "KREDİ KARTI"
+                                   - "GENEL TOPLAM"
+                                   - "TOPLAM"
+                                   - "TOTAL"
+                                   Write the amount using a dot as the decimal separator.
+                                   Example: 1500.00, 13.85, 250.99
+                                   Do NOT use a thousand separator.
 
-                3. transactionDate — Fişin tarihi.
-                   YYYY-MM-DD formatında yaz.
-                   Türk fişlerinde DD.MM.YYYY veya
-                   DD/MM/YYYY olabilir.
+                                3. transactionDate — The date of the receipt.
+                                   Write in YYYY-MM-DD format.
+                                   On Turkish receipts, it might be
+                                   DD.MM.YYYY or DD/MM/YYYY.
 
-                4. currency — Para birimi kodu.
-                   Türk fişleri için TRY.
-                   Diğerleri: USD, EUR, GBP vb.
-                   Emin değilsen ve fiş Türkçe ise TRY yaz.
+                                4. currency — The currency code.
+                                   For Turkish receipts, use TRY.
+                                   Others: USD, EUR, GBP, etc.
+                                   If you are unsure and the receipt is in Turkish, use TRY.
 
-                5. suggestedCategory — Harcama kategorisi.
-                   Şu kategorilerden SADECE BİRİNİ seç:
-                   Food, Transport, Shopping, Bills,
-                   Entertainment, Health, Other
+                                5. suggestedCategory — The expense category.
+                                   Select ONLY ONE from the following categories:
+                                   Food, Transport, Shopping, Bills,
+                                   Entertainment, Health, Other
 
-                   Food: Restoran, kafe, market, yemek
-                   Transport: Taksi, yakıt, otopark, toplu taşıma
-                   Shopping: Giyim, elektronik, mağaza
-                   Bills: Elektrik, su, internet, telefon
-                   Entertainment: Sinema, oyun, konser
-                   Health: Eczane, hastane, doktor
-                   Other: Yukarıdakilere uymayan
+                                   Food: Restaurant, cafe, grocery, meals
+                                   Transport: Taxi, fuel, parking, public transit
+                                   Shopping: Clothing, electronics, retail
+                                   Bills: Electricity, water, internet, phone
+                                   Entertainment: Cinema, gaming, concert
+                                   Health: Pharmacy, hospital, doctor
+                                   Other: Anything that does not fit above
 
-                ÖNEMLİ:
-                - Bilgi bulunamazsa null döndür.
-                - Bilgi uydurma.
-                - totalAmount mutlaka nokta ile
-                  ondalık ayırarak yaz (örn: 13.85).
-                """;
+                                IMPORTANT:
+                                - If the information cannot be found, return null.
+                                - Do not fabricate information.
+                                - totalAmount must definitely be written
+                                  using a dot as the decimal separator (e.g. 13.85).
+                                """;
 
-        String mimeType =
-                contentType != null
-                        ? contentType
-                        : "image/jpeg";
+                String mimeType = contentType != null
+                                ? contentType
+                                : "image/jpeg";
 
-        Content content = Content.fromParts(
-                Part.fromText(prompt),
-                Part.fromBytes(imageData, mimeType)
-        );
+                Content content = Content.fromParts(
+                                Part.fromText(prompt),
+                                Part.fromBytes(imageData, mimeType));
 
-        GenerateContentConfig config =
-                GenerateContentConfig.builder()
-                        .responseMimeType(
-                                "application/json"
-                        )
-                        .responseSchema(
-                                buildResponseSchema()
-                        )
-                        .build();
+                GenerateContentConfig config = GenerateContentConfig.builder()
+                                .responseMimeType(
+                                                "application/json")
+                                .responseSchema(
+                                                buildResponseSchema())
+                                .build();
 
-        GenerateContentResponse response =
-                client.models.generateContent(
-                        model,
-                        content,
-                        config
-                );
+                GenerateContentResponse response = client.models.generateContent(
+                                model,
+                                content,
+                                config);
 
-        long elapsed =
-                System.currentTimeMillis()
-                        - requestStart;
+                long elapsed = System.currentTimeMillis()
+                                - requestStart;
 
-        
-
-        return parseResponse(
-                response.text()
-        );
-    }
-
-    private ReceiptExtractionResult parseResponse(
-            String jsonText
-    ) {
-
-        
-
-        
-
-        
-
-        try {
-
-            var node = objectMapper.readTree(
-                    jsonText
-            );
-
-            String merchantName =
-                    nullableText(node, "merchantName");
-
-            BigDecimal totalAmount =
-                    nullableDecimal(node, "totalAmount");
-
-            LocalDate transactionDate =
-                    nullableDate(node, "transactionDate");
-
-            String currency =
-                    nullableText(node, "currency");
-
-            String suggestedCategory =
-                    nullableText(node, "suggestedCategory");
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            return new ReceiptExtractionResult(
-                    merchantName,
-                    totalAmount,
-                    transactionDate,
-                    currency,
-                    suggestedCategory
-            );
-
-        } catch (Exception e) {
-
-            throw new IllegalStateException(
-                    "Failed to parse Gemini Vision "
-                            + "receipt response.",
-                    e
-            );
+                return parseResponse(
+                                response.text());
         }
-    }
 
-    private Schema buildResponseSchema() {
+        private ReceiptExtractionResult parseResponse(
+                        String jsonText) {
 
-        return Schema.builder()
-                .type(Type.Known.OBJECT)
-                .properties(
-                        Map.of(
-                                "merchantName",
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .nullable(true)
-                                        .build(),
+                try {
 
-                                "totalAmount",
-                                Schema.builder()
-                                        .type(Type.Known.NUMBER)
-                                        .nullable(true)
-                                        .build(),
+                        var node = objectMapper.readTree(
+                                        jsonText);
 
-                                "transactionDate",
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .nullable(true)
-                                        .build(),
+                        String merchantName = nullableText(node, "merchantName");
 
-                                "currency",
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .nullable(true)
-                                        .build(),
+                        BigDecimal totalAmount = nullableDecimal(node, "totalAmount");
 
-                                "suggestedCategory",
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .enum_(
+                        LocalDate transactionDate = nullableDate(node, "transactionDate");
+
+                        String currency = nullableText(node, "currency");
+
+                        String suggestedCategory = nullableText(node, "suggestedCategory");
+
+                        return new ReceiptExtractionResult(
+                                        merchantName,
+                                        totalAmount,
+                                        transactionDate,
+                                        currency,
+                                        suggestedCategory);
+
+                } catch (Exception e) {
+
+                        throw new IllegalStateException(
+                                        "Failed to parse Gemini Vision "
+                                                        + "receipt response.",
+                                        e);
+                }
+        }
+
+        private Schema buildResponseSchema() {
+
+                return Schema.builder()
+                                .type(Type.Known.OBJECT)
+                                .properties(
+                                                Map.of(
+                                                                "merchantName",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .nullable(true)
+                                                                                .build(),
+
+                                                                "totalAmount",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .nullable(true)
+                                                                                .build(),
+
+                                                                "transactionDate",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .nullable(true)
+                                                                                .build(),
+
+                                                                "currency",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .nullable(true)
+                                                                                .build(),
+
+                                                                "suggestedCategory",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .enum_(
+                                                                                                List.of(
+                                                                                                                "Food",
+                                                                                                                "Transport",
+                                                                                                                "Shopping",
+                                                                                                                "Bills",
+                                                                                                                "Entertainment",
+                                                                                                                "Health",
+                                                                                                                "Other"))
+                                                                                .build()))
+                                .required(
                                                 List.of(
-                                                        "Food",
-                                                        "Transport",
-                                                        "Shopping",
-                                                        "Bills",
-                                                        "Entertainment",
-                                                        "Health",
-                                                        "Other"
-                                                )
-                                        )
-                                        .build()
-                        )
-                )
-                .required(
-                        List.of(
-                                "merchantName",
-                                "totalAmount",
-                                "transactionDate",
-                                "currency",
-                                "suggestedCategory"
-                        )
-                )
-                .build();
-    }
-
-    private String nullableText(
-            com.fasterxml.jackson.databind.JsonNode node,
-            String field
-    ) {
-
-        var value = node.get(field);
-
-        if (value == null || value.isNull()) {
-            return null;
+                                                                "merchantName",
+                                                                "totalAmount",
+                                                                "transactionDate",
+                                                                "currency",
+                                                                "suggestedCategory"))
+                                .build();
         }
 
-        String text = value.asText();
+        private String nullableText(
+                        com.fasterxml.jackson.databind.JsonNode node,
+                        String field) {
 
-        return text.isBlank() ? null : text;
-    }
+                var value = node.get(field);
 
-    private BigDecimal nullableDecimal(
-            com.fasterxml.jackson.databind.JsonNode node,
-            String field
-    ) {
+                if (value == null || value.isNull()) {
+                        return null;
+                }
 
-        var value = node.get(field);
+                String text = value.asText();
 
-        if (value == null || value.isNull()) {
-            return null;
+                return text.isBlank() ? null : text;
         }
 
-        if (value.isNumber()) {
-            return value.decimalValue();
+        private BigDecimal nullableDecimal(
+                        com.fasterxml.jackson.databind.JsonNode node,
+                        String field) {
+
+                var value = node.get(field);
+
+                if (value == null || value.isNull()) {
+                        return null;
+                }
+
+                if (value.isNumber()) {
+                        return value.decimalValue();
+                }
+
+                String text = value.asText();
+
+                if (text.isBlank()) {
+                        return null;
+                }
+
+                /*
+                 * Gemini sometimes returns in Turkish
+                 * format (1.500,00).
+                 * Handle this.
+                 */
+                if (text.contains(",")) {
+                        text = text
+                                        .replace(".", "")
+                                        .replace(",", ".");
+                }
+
+                return new BigDecimal(text);
         }
 
-        String text = value.asText();
+        private LocalDate nullableDate(
+                        com.fasterxml.jackson.databind.JsonNode node,
+                        String field) {
 
-        if (text.isBlank()) {
-            return null;
+                var value = node.get(field);
+
+                if (value == null || value.isNull()) {
+                        return null;
+                }
+
+                String text = value.asText();
+
+                if (text.isBlank()) {
+                        return null;
+                }
+
+                return LocalDate.parse(text);
         }
 
-        /*
-         * Gemini sometimes returns in Turkish
-         * format (1.500,00).
-         * Handle this.
-         */
-        if (text.contains(",")) {
-            text = text
-                    .replace(".", "")
-                    .replace(",", ".");
+        private boolean isRetryable(
+                        Exception exception) {
+
+                String message = exception.getMessage();
+
+                if (message == null) {
+                        return true;
+                }
+
+                String lower = message.toLowerCase();
+
+                return lower.contains("timeout")
+                                || lower.contains("timed out")
+                                || lower.contains("unknownhost")
+                                || lower.contains("connection")
+                                || lower.contains("503")
+                                || lower.contains("502")
+                                || lower.contains("500")
+                                || lower.contains("429")
+                                || lower.contains("rate limit");
         }
 
-        return new BigDecimal(text);
-    }
+        private void waitBeforeRetry() {
 
-    private LocalDate nullableDate(
-            com.fasterxml.jackson.databind.JsonNode node,
-            String field
-    ) {
+                try {
 
-        var value = node.get(field);
+                        Thread.sleep(5000);
 
-        if (value == null || value.isNull()) {
-            return null;
+                } catch (InterruptedException e) {
+
+                        Thread.currentThread().interrupt();
+
+                        throw new IllegalStateException(
+                                        "Gemini Vision retry was interrupted.",
+                                        e);
+                }
         }
-
-        String text = value.asText();
-
-        if (text.isBlank()) {
-            return null;
-        }
-
-        return LocalDate.parse(text);
-    }
-
-    private boolean isRetryable(
-            Exception exception
-    ) {
-
-        String message =
-                exception.getMessage();
-
-        if (message == null) {
-            return true;
-        }
-
-        String lower =
-                message.toLowerCase();
-
-        return lower.contains("timeout")
-                || lower.contains("timed out")
-                || lower.contains("unknownhost")
-                || lower.contains("connection")
-                || lower.contains("503")
-                || lower.contains("502")
-                || lower.contains("500")
-                || lower.contains("429")
-                || lower.contains("rate limit");
-    }
-
-    private void waitBeforeRetry() {
-
-        try {
-
-            Thread.sleep(5000);
-
-        } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();
-
-            throw new IllegalStateException(
-                    "Gemini Vision retry was interrupted.",
-                    e
-            );
-        }
-    }
 }
