@@ -42,7 +42,7 @@ public class GeminiFinancialInsightGenerator
 
         long start = System.currentTimeMillis();
 
-        System.out.println("GEMINI REQUEST START");
+        
 
         try {
 
@@ -58,21 +58,15 @@ public class GeminiFinancialInsightGenerator
                 );
             }
 
-            System.err.println(
-                    "GEMINI REQUEST FAILED. " +
-                            "Retrying in 5 seconds..."
-            );
+            
 
-            System.err.println(
-                    "Reason: " +
-                            firstException.getMessage()
-            );
+            
 
             waitBeforeRetry();
 
             try {
 
-                System.out.println("GEMINI RETRY START");
+                
 
                 return executeRequest(prompt);
 
@@ -89,11 +83,7 @@ public class GeminiFinancialInsightGenerator
             long elapsed =
                     System.currentTimeMillis() - start;
 
-            System.out.println(
-                    "TOTAL GEMINI TIME: "
-                            + elapsed
-                            + " ms"
-            );
+            
         }
     }
 
@@ -121,11 +111,7 @@ public class GeminiFinancialInsightGenerator
                 System.currentTimeMillis()
                         - requestStart;
 
-        System.out.println(
-                "GEMINI REQUEST TIME: "
-                        + elapsed
-                        + " ms"
-        );
+        
 
         try {
 
