@@ -2,6 +2,8 @@ package com.finora.common.exception;
 
 import com.finora.common.dto.ApiErrorResponse;
 import com.finora.common.dto.ApiResponse;
+import com.finora.dashboard.ai.FinancialInsightRateLimitException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -99,6 +101,25 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
+                .body(
+                        ApiResponse.error(error)
+                );
+    }
+
+    @ExceptionHandler(FinancialInsightRateLimitException.class)
+    public ResponseEntity<ApiResponse<Void>> handleFinancialInsightRateLimit(
+            FinancialInsightRateLimitException exception
+    ) {
+
+        ApiErrorResponse error =
+                new ApiErrorResponse(
+                        "FINANCIAL_INSIGHT_RATE_LIMIT",
+                        exception.getMessage(),
+                        HttpStatus.TOO_MANY_REQUESTS.value()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(
                         ApiResponse.error(error)
                 );

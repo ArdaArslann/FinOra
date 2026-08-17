@@ -12,12 +12,12 @@ import org.springframework.web.client.RestClient;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class OpenAIReceiptExtractor implements ReceiptExtractor {
+public class OpenAIReceiptExtractor
+        implements ReceiptExtractor {
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -28,37 +28,45 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             @Value("${openai.api-key}") String apiKey,
             @Value("${openai.model}") String model
     ) {
+
         this.objectMapper = objectMapper;
         this.model = model;
 
-        this.restClient = RestClient.builder()
-                .baseUrl("https://api.openai.com/v1")
-                .defaultHeader(
-                        "Authorization",
-                        "Bearer " + apiKey
-                )
-                .build();
+        this.restClient =
+                RestClient.builder()
+                        .baseUrl(
+                                "https://api.openai.com/v1"
+                        )
+                        .defaultHeader(
+                                "Authorization",
+                                "Bearer " + apiKey
+                        )
+                        .build();
     }
 
     @Override
     public ReceiptExtractionResult extract(
-            byte[] file,
+            byte[] imageData,
             String contentType
     ) {
 
-        String base64File =
-                Base64.getEncoder().encodeToString(file);
+        if (imageData == null
+                || imageData.length == 0) {
 
-        String dataUrl =
-                "data:" + contentType + ";base64," + base64File;
+            throw new IllegalArgumentException(
+                    "Image data cannot be empty."
+            );
+        }
 
         Map<String, Object> request =
-                buildRequest(dataUrl);
+                buildRequest(imageData, contentType);
 
         String response =
                 restClient.post()
                         .uri("/responses")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(
+                                MediaType.APPLICATION_JSON
+                        )
                         .body(request)
                         .retrieve()
                         .body(String.class);
@@ -67,113 +75,172 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
     }
 
     private Map<String, Object> buildRequest(
-            String dataUrl
+            byte[] imageData,
+            String contentType
     ) {
 
-        Map<String, Object> image =
-                Map.of(
-                        "type", "input_image",
-                        "image_url", dataUrl
-                );
+        String prompt = """
+                Analyze this receipt image.
 
-        Map<String, Object> text =
-                Map.of(
-                        "type", "input_text",
-                        "text", """
-                                Analyze this receipt.
+                Extract:
 
-                                Extract:
-                                - merchant name
-                                - total amount
-                                - transaction date
-                                - currency
-                                - suggested expense category
+                1. merchantName — Business name at
+                   the top of the receipt.
 
-                                Rules:
-                                - Return null when a value cannot be determined.
-                                - transactionDate must use YYYY-MM-DD.
-                                - totalAmount must be a numeric value.
-                                - suggestedCategory must be one of:
-                                  Food, Transport, Shopping, Bills,
-                                  Entertainment, Health, Other.
-                                """
-                );
+                2. totalAmount — Final payable amount.
+                   Use dot as decimal separator.
+                   Example: 1500.00, 13.85
+                   Do NOT use thousand separators.
+
+                3. transactionDate — Date in YYYY-MM-DD.
+
+                4. currency — Currency code
+                   (TRY, USD, EUR, etc).
+
+                5. suggestedCategory — One of:
+                   Food, Transport, Shopping, Bills,
+                   Entertainment, Health, Other
+
+                Return null for unknown fields.
+                Do not invent information.
+                """;
+
+        String base64Image =
+                Base64.getEncoder()
+                        .encodeToString(imageData);
+
+        String mimeType =
+                contentType != null
+                        ? contentType
+                        : "image/jpeg";
 
         Map<String, Object> content =
                 Map.of(
-                        "role", "user",
-                        "content", List.of(
-                                text,
-                                image
+                        "role",
+                        "user",
+
+                        "content",
+                        List.of(
+                                Map.of(
+                                        "type",
+                                        "input_text",
+
+                                        "text",
+                                        prompt
+                                ),
+                                Map.of(
+                                        "type",
+                                        "input_image",
+
+                                        "image_url",
+                                        "data:" + mimeType
+                                                + ";base64,"
+                                                + base64Image
+                                )
                         )
                 );
 
         Map<String, Object> schema =
-                new HashMap<>();
-
-        schema.put("type", "object");
-
-        schema.put(
-                "properties",
                 Map.of(
-                        "merchantName",
-                        Map.of(
-                                "type",
-                                List.of("string", "null")
-                        ),
-                        "totalAmount",
-                        Map.of(
-                                "type",
-                                List.of("number", "null")
-                        ),
-                        "transactionDate",
-                        Map.of(
-                                "type",
-                                List.of("string", "null")
-                        ),
-                        "currency",
-                        Map.of(
-                                "type",
-                                List.of("string", "null")
-                        ),
-                        "suggestedCategory",
-                        Map.of(
-                                "type",
-                                List.of("string", "null")
-                        )
-                )
-        );
+                        "type",
+                        "object",
 
-        schema.put(
-                "required",
-                List.of(
-                        "merchantName",
-                        "totalAmount",
-                        "transactionDate",
-                        "currency",
-                        "suggestedCategory"
-                )
-        );
+                        "properties",
+                        Map.of(
 
-        schema.put("additionalProperties", false);
+                                "merchantName",
+                                Map.of(
+                                        "type",
+                                        List.of(
+                                                "string",
+                                                "null"
+                                        )
+                                ),
+
+                                "totalAmount",
+                                Map.of(
+                                        "type",
+                                        List.of(
+                                                "number",
+                                                "null"
+                                        )
+                                ),
+
+                                "transactionDate",
+                                Map.of(
+                                        "type",
+                                        List.of(
+                                                "string",
+                                                "null"
+                                        )
+                                ),
+
+                                "currency",
+                                Map.of(
+                                        "type",
+                                        List.of(
+                                                "string",
+                                                "null"
+                                        )
+                                ),
+
+                                "suggestedCategory",
+                                Map.of(
+                                        "type",
+                                        "string",
+                                        "enum",
+                                        List.of(
+                                                "Food",
+                                                "Transport",
+                                                "Shopping",
+                                                "Bills",
+                                                "Entertainment",
+                                                "Health",
+                                                "Other"
+                                        )
+                                )
+                        ),
+
+                        "required",
+                        List.of(
+                                "merchantName",
+                                "totalAmount",
+                                "transactionDate",
+                                "currency",
+                                "suggestedCategory"
+                        ),
+
+                        "additionalProperties",
+                        false
+                );
 
         Map<String, Object> format =
                 Map.of(
-                        "type", "json_schema",
-                        "name", "receipt_extraction",
-                        "strict", true,
-                        "schema", schema
-                );
+                        "type",
+                        "json_schema",
 
-        Map<String, Object> textConfig =
-                Map.of(
-                        "format", format
+                        "name",
+                        "receipt_extraction",
+
+                        "strict",
+                        true,
+
+                        "schema",
+                        schema
                 );
 
         return Map.of(
-                "model", model,
-                "input", List.of(content),
-                "text", textConfig
+                "model",
+                model,
+
+                "input",
+                List.of(content),
+
+                "text",
+                Map.of(
+                        "format",
+                        format
+                )
         );
     }
 
@@ -189,8 +256,20 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             String jsonText =
                     findOutputText(root);
 
+            System.out.println(
+                    "========== OPENAI RAW JSON =========="
+            );
+
+            System.out.println(jsonText);
+
+            System.out.println(
+                    "====================================="
+            );
+
             JsonNode extracted =
-                    objectMapper.readTree(jsonText);
+                    objectMapper.readTree(
+                            jsonText
+                    );
 
             String merchantName =
                     nullableText(
@@ -222,6 +301,39 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
                             "suggestedCategory"
                     );
 
+            System.out.println(
+                    "========== AI EXTRACTION =========="
+            );
+
+            System.out.println(
+                    "MERCHANT = " +
+                            merchantName
+            );
+
+            System.out.println(
+                    "TOTAL = " +
+                            totalAmount
+            );
+
+            System.out.println(
+                    "DATE = " +
+                            transactionDate
+            );
+
+            System.out.println(
+                    "CURRENCY = " +
+                            currency
+            );
+
+            System.out.println(
+                    "CATEGORY = " +
+                            suggestedCategory
+            );
+
+            System.out.println(
+                    "==================================="
+            );
+
             return new ReceiptExtractionResult(
                     merchantName,
                     totalAmount,
@@ -231,8 +343,9 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             );
 
         } catch (Exception e) {
+
             throw new IllegalStateException(
-                    "Failed to parse receipt extraction response.",
+                    "Failed to parse OpenAI receipt response.",
                     e
             );
         }
@@ -242,20 +355,19 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             JsonNode root
     ) {
 
-        JsonNode output =
-                root.path("output");
+        for (JsonNode item :
+                root.path("output")) {
 
-        for (JsonNode item : output) {
-
-            JsonNode content =
-                    item.path("content");
-
-            for (JsonNode contentItem : content) {
+            for (JsonNode content :
+                    item.path("content")) {
 
                 if ("output_text".equals(
-                        contentItem.path("type").asText()
+                        content
+                                .path("type")
+                                .asText()
                 )) {
-                    return contentItem
+
+                    return content
                             .path("text")
                             .asText();
                 }
@@ -272,13 +384,21 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             String field
     ) {
 
-        JsonNode value = node.get(field);
+        JsonNode value =
+                node.get(field);
 
-        if (value == null || value.isNull()) {
+        if (value == null ||
+                value.isNull()) {
+
             return null;
         }
 
-        return value.asText();
+        String text =
+                value.asText();
+
+        return text.isBlank()
+                ? null
+                : text;
     }
 
     private BigDecimal nullableDecimal(
@@ -286,13 +406,27 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             String field
     ) {
 
-        JsonNode value = node.get(field);
+        JsonNode value =
+                node.get(field);
 
-        if (value == null || value.isNull()) {
+        if (value == null ||
+                value.isNull()) {
+
             return null;
         }
 
-        return value.decimalValue();
+        if (value.isNumber()) {
+            return value.decimalValue();
+        }
+
+        String text =
+                value.asText();
+
+        if (text.isBlank()) {
+            return null;
+        }
+
+        return new BigDecimal(text);
     }
 
     private LocalDate nullableDate(
@@ -300,12 +434,22 @@ public class OpenAIReceiptExtractor implements ReceiptExtractor {
             String field
     ) {
 
-        JsonNode value = node.get(field);
+        JsonNode value =
+                node.get(field);
 
-        if (value == null || value.isNull()) {
+        if (value == null ||
+                value.isNull()) {
+
             return null;
         }
 
-        return LocalDate.parse(value.asText());
+        String text =
+                value.asText();
+
+        if (text.isBlank()) {
+            return null;
+        }
+
+        return LocalDate.parse(text);
     }
 }

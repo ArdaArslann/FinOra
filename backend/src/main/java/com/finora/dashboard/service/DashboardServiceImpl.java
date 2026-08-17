@@ -3,6 +3,7 @@ package com.finora.dashboard.service;
 import com.finora.budget.entity.BudgetEntity;
 import com.finora.budget.repository.BudgetRepository;
 import com.finora.common.security.CurrentUserService;
+import com.finora.dashboard.ai.service.FinancialInsightService;
 import com.finora.dashboard.dto.BudgetUsageResponse;
 import com.finora.dashboard.dto.DashboardResponse;
 import com.finora.dashboard.dto.DashboardSummaryResponse;
@@ -101,11 +102,12 @@ public class DashboardServiceImpl implements DashboardService {
                             );
                         })
                         .toList();
+
         return new DashboardResponse(
                 summary,
                 budgetUsages,
                 recentTransactions,
-                null // TODO: Generate AI-powered financial insights.
+                null
         );
     }
 

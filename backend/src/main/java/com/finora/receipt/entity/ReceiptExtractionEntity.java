@@ -13,9 +13,13 @@ import java.time.LocalDate;
 @Table(name = "receipt_extractions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReceiptExtractionEntity extends BaseEntity {
+public class ReceiptExtractionEntity
+        extends BaseEntity {
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(
+            fetch = FetchType.LAZY,
+            optional = false
+    )
     @JoinColumn(
             name = "receipt_id",
             nullable = false,
@@ -26,7 +30,10 @@ public class ReceiptExtractionEntity extends BaseEntity {
     @Column(length = 255)
     private String merchantName;
 
-    @Column(precision = 19, scale = 2)
+    @Column(
+            precision = 19,
+            scale = 2
+    )
     private BigDecimal totalAmount;
 
     private LocalDate transactionDate;
@@ -46,7 +53,9 @@ public class ReceiptExtractionEntity extends BaseEntity {
     public static ReceiptExtractionEntity create(
             ReceiptEntity receipt
     ) {
-        return new ReceiptExtractionEntity(receipt);
+        return new ReceiptExtractionEntity(
+                receipt
+        );
     }
 
     public void updateExtraction(
@@ -56,10 +65,20 @@ public class ReceiptExtractionEntity extends BaseEntity {
             String currency,
             String suggestedCategory
     ) {
-        this.merchantName = merchantName;
-        this.totalAmount = totalAmount;
-        this.transactionDate = transactionDate;
-        this.currency = currency;
-        this.suggestedCategory = suggestedCategory;
+
+        this.merchantName =
+                merchantName;
+
+        this.totalAmount =
+                totalAmount;
+
+        this.transactionDate =
+                transactionDate;
+
+        this.currency =
+                currency;
+
+        this.suggestedCategory =
+                suggestedCategory;
     }
 }
