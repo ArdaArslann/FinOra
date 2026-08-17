@@ -48,7 +48,7 @@ public class ReceiptExtractionServiceImpl
                     System.currentTimeMillis();
 
             /*
-             * 1. FOTOĞRAFI STORAGE'DAN AL
+             * 1. GET PHOTO FROM STORAGE
              */
             byte[] file =
                     storageService.download(
@@ -59,16 +59,15 @@ public class ReceiptExtractionServiceImpl
                     System.currentTimeMillis();
 
             /*
-             * 2. GEMINI VISION İLE TÜM BİLGİLERİ ÇIKAR
+             * 2. EXTRACT ALL INFO WITH GEMINI VISION
              *
-             * Doğrudan görüntüyü gönderiyoruz.
-             * Gemini Vision API tek adımda:
+             * We send the image directly.
+             * Gemini Vision API extracts in one step:
              * - merchantName
              * - totalAmount
              * - transactionDate
              * - currency
              * - suggestedCategory
-             * çıkarıyor.
              */
             ReceiptExtractionResult result =
                     receiptExtractor.extract(
@@ -80,7 +79,7 @@ public class ReceiptExtractionServiceImpl
                     System.currentTimeMillis();
 
             /*
-             * 3. SONUÇLARI KAYDET
+             * 3. SAVE RESULTS
              */
             extraction.updateExtraction(
 
