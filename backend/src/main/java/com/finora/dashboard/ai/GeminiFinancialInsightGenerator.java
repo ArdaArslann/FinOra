@@ -17,276 +17,232 @@ import java.util.Map;
 @Service
 @Primary
 public class GeminiFinancialInsightGenerator
-        implements FinancialInsightGenerator {
+                implements FinancialInsightGenerator {
 
-    private final Client client;
-    private final ObjectMapper objectMapper;
-    private final String model;
+        private final Client client;
+        private final ObjectMapper objectMapper;
+        private final String model;
 
-    public GeminiFinancialInsightGenerator(
-            ObjectMapper objectMapper,
-            @Value("${gemini.api-key}") String apiKey,
-            @Value("${gemini.model}") String model
-    ) {
-        this.objectMapper = objectMapper;
+        public GeminiFinancialInsightGenerator(
+                        ObjectMapper objectMapper,
+                        @Value("${gemini.api-key}") String apiKey,
+                        @Value("${gemini.model}") String model) {
+                this.objectMapper = objectMapper;
 
-        this.client = Client.builder()
-                .apiKey(apiKey)
-                .build();
+                this.client = Client.builder()
+                                .apiKey(apiKey)
+                                .build();
 
-        this.model = model;
-    }
-
-    @Override
-    public FinancialInsightResponse generate(String prompt) {
-
-        long start = System.currentTimeMillis();
-
-        
-
-        try {
-
-            return executeRequest(prompt);
-
-        } catch (Exception firstException) {
-
-            if (!isRetryable(firstException)) {
-
-                throw new GeminiInsightException(
-                        "Gemini request failed.",
-                        firstException
-                );
-            }
-
-            
-
-            
-
-            waitBeforeRetry();
-
-            try {
-
-                
-
-                return executeRequest(prompt);
-
-            } catch (Exception secondException) {
-
-                throw new GeminiInsightException(
-                        "Gemini request failed after retry.",
-                        secondException
-                );
-            }
-
-        } finally {
-
-            long elapsed =
-                    System.currentTimeMillis() - start;
-
-            
-        }
-    }
-
-    private FinancialInsightResponse executeRequest(
-            String prompt
-    ) {
-
-        long requestStart =
-                System.currentTimeMillis();
-
-        GenerateContentConfig config =
-                GenerateContentConfig.builder()
-                        .responseMimeType("application/json")
-                        .responseSchema(buildResponseSchema())
-                        .build();
-
-        GenerateContentResponse response =
-                client.models.generateContent(
-                        model,
-                        prompt,
-                        config
-                );
-
-        long elapsed =
-                System.currentTimeMillis()
-                        - requestStart;
-
-        
-
-        try {
-
-            return objectMapper.readValue(
-                    response.text(),
-                    FinancialInsightResponse.class
-            );
-
-        } catch (Exception e) {
-
-            throw new IllegalStateException(
-                    "Failed to parse Gemini financial insight response.",
-                    e
-            );
-        }
-    }
-
-    private boolean isRetryable(Exception exception) {
-
-        String message =
-                exception.getMessage();
-
-        if (message == null) {
-            return true;
+                this.model = model;
         }
 
-        String lower =
-                message.toLowerCase();
+        @Override
+        public FinancialInsightResponse generate(String prompt) {
 
-        return lower.contains("timeout")
-                || lower.contains("timed out")
-                || lower.contains("unknownhost")
-                || lower.contains("connection")
-                || lower.contains("503")
-                || lower.contains("502")
-                || lower.contains("500")
-                || lower.contains("429")
-                || lower.contains("rate limit");
-    }
+                long start = System.currentTimeMillis();
 
-    private void waitBeforeRetry() {
+                try {
 
-        try {
+                        return executeRequest(prompt);
 
-            Thread.sleep(5000);
+                } catch (Exception firstException) {
 
-        } catch (InterruptedException e) {
+                        if (!isRetryable(firstException)) {
 
-            Thread.currentThread().interrupt();
+                                throw new GeminiInsightException(
+                                                "Gemini request failed.",
+                                                firstException);
+                        }
 
-            throw new GeminiInsightException(
-                    "Gemini retry was interrupted.",
-                    e
-            );
+                        waitBeforeRetry();
+
+                        try {
+
+                                return executeRequest(prompt);
+
+                        } catch (Exception secondException) {
+
+                                throw new GeminiInsightException(
+                                                "Gemini request failed after retry.",
+                                                secondException);
+                        }
+
+                } finally {
+
+                        long elapsed = System.currentTimeMillis() - start;
+
+                }
         }
-    }
 
+        private FinancialInsightResponse executeRequest(
+                        String prompt) {
 
-    private Schema buildResponseSchema() {
+                long requestStart = System.currentTimeMillis();
 
-        Schema monthlyStatusSchema =
-                Schema.builder()
-                        .type(Type.Known.OBJECT)
-                        .properties(
-                                Map.of(
-                                        "income",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build(),
+                GenerateContentConfig config = GenerateContentConfig.builder()
+                                .responseMimeType("application/json")
+                                .responseSchema(buildResponseSchema())
+                                .build();
 
-                                        "expenses",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build(),
+                GenerateContentResponse response = client.models.generateContent(
+                                model,
+                                prompt,
+                                config);
 
-                                        "balance",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build()
-                                )
-                        )
-                        .required(
-                                List.of(
-                                        "income",
-                                        "expenses",
-                                        "balance"
-                                )
-                        )
-                        .build();
+                long elapsed = System.currentTimeMillis()
+                                - requestStart;
 
-        Schema budgetInsightSchema =
-                Schema.builder()
-                        .type(Type.Known.OBJECT)
-                        .properties(
-                                Map.of(
-                                        "category",
-                                        Schema.builder()
-                                                .type(Type.Known.STRING)
-                                                .build(),
+                try {
 
-                                        "spent",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build(),
+                        return objectMapper.readValue(
+                                        response.text(),
+                                        FinancialInsightResponse.class);
 
-                                        "budget",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build(),
+                } catch (Exception e) {
 
-                                        "remaining",
-                                        Schema.builder()
-                                                .type(Type.Known.NUMBER)
-                                                .build(),
+                        throw new IllegalStateException(
+                                        "Failed to parse Gemini financial insight response.",
+                                        e);
+                }
+        }
 
-                                        "usagePercentage",
-                                        Schema.builder()
-                                                .type(Type.Known.INTEGER)
-                                                .build()
-                                )
-                        )
-                        .required(
-                                List.of(
-                                        "category",
-                                        "spent",
-                                        "budget",
-                                        "remaining",
-                                        "usagePercentage"
-                                )
-                        )
-                        .build();
+        private boolean isRetryable(Exception exception) {
 
-        Schema budgetInsightsArray =
-                Schema.builder()
-                        .type(Type.Known.ARRAY)
-                        .items(budgetInsightSchema)
-                        .build();
+                String message = exception.getMessage();
 
-        Schema recommendationsArray =
-                Schema.builder()
-                        .type(Type.Known.ARRAY)
-                        .items(
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .build()
-                        )
-                        .build();
+                if (message == null) {
+                        return true;
+                }
 
-        return Schema.builder()
-                .type(Type.Known.OBJECT)
-                .properties(
-                        Map.of(
-                                "summary",
-                                Schema.builder()
-                                        .type(Type.Known.STRING)
-                                        .build(),
+                String lower = message.toLowerCase();
 
-                                "monthlyStatus",
-                                monthlyStatusSchema,
+                return lower.contains("timeout")
+                                || lower.contains("timed out")
+                                || lower.contains("unknownhost")
+                                || lower.contains("connection")
+                                || lower.contains("503")
+                                || lower.contains("502")
+                                || lower.contains("500")
+                                || lower.contains("429")
+                                || lower.contains("rate limit");
+        }
 
-                                "budgetInsights",
-                                budgetInsightsArray,
+        private void waitBeforeRetry() {
 
-                                "recommendations",
-                                recommendationsArray
-                        )
-                )
-                .required(
-                        List.of(
-                                "summary",
-                                "monthlyStatus",
-                                "budgetInsights",
-                                "recommendations"
-                        )
-                )
-                .build();
-    }
+                try {
+
+                        Thread.sleep(5000);
+
+                } catch (InterruptedException e) {
+
+                        Thread.currentThread().interrupt();
+
+                        throw new GeminiInsightException(
+                                        "Gemini retry was interrupted.",
+                                        e);
+                }
+        }
+
+        private Schema buildResponseSchema() {
+
+                Schema monthlyStatusSchema = Schema.builder()
+                                .type(Type.Known.OBJECT)
+                                .properties(
+                                                Map.of(
+                                                                "income",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build(),
+
+                                                                "expenses",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build(),
+
+                                                                "balance",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build()))
+                                .required(
+                                                List.of(
+                                                                "income",
+                                                                "expenses",
+                                                                "balance"))
+                                .build();
+
+                Schema budgetInsightSchema = Schema.builder()
+                                .type(Type.Known.OBJECT)
+                                .properties(
+                                                Map.of(
+                                                                "category",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .build(),
+
+                                                                "spent",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build(),
+
+                                                                "budget",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build(),
+
+                                                                "remaining",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.NUMBER)
+                                                                                .build(),
+
+                                                                "usagePercentage",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.INTEGER)
+                                                                                .build()))
+                                .required(
+                                                List.of(
+                                                                "category",
+                                                                "spent",
+                                                                "budget",
+                                                                "remaining",
+                                                                "usagePercentage"))
+                                .build();
+
+                Schema budgetInsightsArray = Schema.builder()
+                                .type(Type.Known.ARRAY)
+                                .items(budgetInsightSchema)
+                                .build();
+
+                Schema recommendationsArray = Schema.builder()
+                                .type(Type.Known.ARRAY)
+                                .items(
+                                                Schema.builder()
+                                                                .type(Type.Known.STRING)
+                                                                .build())
+                                .build();
+
+                return Schema.builder()
+                                .type(Type.Known.OBJECT)
+                                .properties(
+                                                Map.of(
+                                                                "summary",
+                                                                Schema.builder()
+                                                                                .type(Type.Known.STRING)
+                                                                                .build(),
+
+                                                                "monthlyStatus",
+                                                                monthlyStatusSchema,
+
+                                                                "budgetInsights",
+                                                                budgetInsightsArray,
+
+                                                                "recommendations",
+                                                                recommendationsArray))
+                                .required(
+                                                List.of(
+                                                                "summary",
+                                                                "monthlyStatus",
+                                                                "budgetInsights",
+                                                                "recommendations"))
+                                .build();
+        }
 }

@@ -12,123 +12,85 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class ReceiptExtractionServiceImpl
-        implements ReceiptExtractionService {
+                implements ReceiptExtractionService {
 
-    private final ReceiptExtractionRepository extractionRepository;
+        private final ReceiptExtractionRepository extractionRepository;
 
-    private final ReceiptExtractor receiptExtractor;
+        private final ReceiptExtractor receiptExtractor;
 
-    private final StorageService storageService;
+        private final StorageService storageService;
 
-    @Override
-    public void createExtraction(
-            ReceiptEntity receipt
-    ) {
+        @Override
+        public void createExtraction(
+                        ReceiptEntity receipt) {
 
-        ReceiptExtractionEntity extraction =
-                ReceiptExtractionEntity.create(
-                        receipt
-                );
+                ReceiptExtractionEntity extraction = ReceiptExtractionEntity.create(
+                                receipt);
 
-        receipt.assignExtraction(
-                extraction
-        );
+                receipt.assignExtraction(
+                                extraction);
 
-        extractionRepository.save(
-                extraction
-        );
+                extractionRepository.save(
+                                extraction);
 
-        receipt.updateStatus(
-                ReceiptStatus.PROCESSING
-        );
+                receipt.updateStatus(
+                                ReceiptStatus.PROCESSING);
 
-        try {
+                try {
 
-            long start =
-                    System.currentTimeMillis();
+                        long start = System.currentTimeMillis();
 
-            /*
-             * 1. GET PHOTO FROM STORAGE
-             */
-            byte[] file =
-                    storageService.download(
-                            receipt.getStorageKey()
-                    );
+                        /*
+                         * 1. GET PHOTO FROM STORAGE
+                         */
+                        byte[] file = storageService.download(
+                                        receipt.getStorageKey());
 
-            long afterDownload =
-                    System.currentTimeMillis();
+                        long afterDownload = System.currentTimeMillis();
 
-            /*
-             * 2. EXTRACT ALL INFO WITH GEMINI VISION
-             *
-             * We send the image directly.
-             * Gemini Vision API extracts in one step:
-             * - merchantName
-             * - totalAmount
-             * - transactionDate
-             * - currency
-             * - suggestedCategory
-             */
-            ReceiptExtractionResult result =
-                    receiptExtractor.extract(
-                            file,
-                            receipt.getContentType()
-                    );
+                        /*
+                         * 2. EXTRACT ALL INFO WITH GEMINI VISION
+                         *
+                         * We send the image directly.
+                         * Gemini Vision API extracts in one step:
+                         * - merchantName
+                         * - totalAmount
+                         * - transactionDate
+                         * - currency
+                         * - suggestedCategory
+                         */
+                        ReceiptExtractionResult result = receiptExtractor.extract(
+                                        file,
+                                        receipt.getContentType());
 
-            long afterExtraction =
-                    System.currentTimeMillis();
+                        long afterExtraction = System.currentTimeMillis();
 
-            /*
-             * 3. SAVE RESULTS
-             */
-            extraction.updateExtraction(
+                        /*
+                         * 3. SAVE RESULTS
+                         */
+                        extraction.updateExtraction(
 
-                    result.merchantName(),
+                                        result.merchantName(),
 
-                    result.totalAmount(),
+                                        result.totalAmount(),
 
-                    result.transactionDate(),
+                                        result.transactionDate(),
 
-                    result.currency(),
+                                        result.currency(),
 
-                    result.suggestedCategory()
-            );
+                                        result.suggestedCategory());
 
-            receipt.updateStatus(
-                    ReceiptStatus.PROCESSED
-            );
+                        receipt.updateStatus(
+                                        ReceiptStatus.PROCESSED);
 
-            
+                } catch (Exception e) {
 
-            
+                        receipt.updateStatus(
+                                        ReceiptStatus.FAILED);
 
-            
+                        e.printStackTrace();
 
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-            
-
-        } catch (Exception e) {
-
-            receipt.updateStatus(
-                    ReceiptStatus.FAILED
-            );
-
-            
-
-            e.printStackTrace();
-
-            throw e;
+                        throw e;
+                }
         }
-    }
 }
