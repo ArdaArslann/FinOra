@@ -1,10 +1,10 @@
 # FinOra
 
-> AI-powered Personal Finance Platform built with Kotlin, Spring Boot, and Clean Architecture.
+> AI-powered Personal Finance Platform built with Java, Spring Boot, PostgreSQL, Redis, and Clean Architecture.
 
 ## Overview
 
-FinOra is a modern personal finance platform that helps users track their income, expenses, and budgets while providing AI-powered financial insights to improve spending habits and financial decision-making.
+FinOra is a modern personal finance platform that helps users manage their income, expenses, and budgets while providing AI-powered receipt processing and financial insights to improve spending habits and financial decision-making.
 
 The project is designed as a portfolio-quality, production-oriented application following modern software engineering practices.
 
@@ -20,17 +20,23 @@ The project is designed as a portfolio-quality, production-oriented application 
 - Dashboard Summary
 - Budget Usage Tracking
 - Recent Transactions
+- Receipt Upload
+- Gemini Vision Receipt Processing
+- Receipt Extraction
+- Receipt Confirmation
+- Receipt-to-Transaction Linking
+- AI Financial Insights
+- Gemini AI Provider
+- OpenAI AI Provider
+- AI Provider Abstraction
+- Redis-backed AI Rate Limiting
 - Global Exception Handling
 - Request Validation
 - Swagger / OpenAPI Documentation
-
-### 🚧 In Progress
-
-- Receipt Upload
-- OCR Integration
-- AI Expense Analysis
-- Financial Statistics
-- Automated Testing
+- PostgreSQL Persistence
+- Flyway Database Migrations
+- Dockerized Backend
+- Docker Compose
 
 ## Tech Stack
 
@@ -55,26 +61,53 @@ The project is designed as a portfolio-quality, production-oriented application 
 - Flyway
 - JPA / Hibernate
 
+### AI
+
+- Google Gemini
+- Gemini Vision
+- OpenAI
+
 ## Architecture
 
 - Clean Architecture
 - DDD Lite
 - RESTful API
 - Layered Architecture
+- DTO-based API Design
+- Service / Repository Pattern
+- AI Provider Abstraction
 
 ## Project Status
 
 🚀 Active Development
 
-Current milestone:
+### Completed Backend Modules
 
-- ✅ Authentication Module
-- ✅ Categories Module
-- ✅ Transactions Module
-- ✅ Budgets Module
-- ✅ Dashboard Module
-- 🚧 Receipt Upload & OCR
-- 🚧 AI Financial Insights
+- ✅ Authentication
+- ✅ Categories
+- ✅ Transactions
+- ✅ Budgets
+- ✅ Dashboard
+- ✅ Receipt Upload
+- ✅ Gemini Vision Receipt Processing
+- ✅ Receipt Extraction
+- ✅ Receipt Confirmation
+- ✅ Receipt-to-Transaction Linking
+- ✅ AI Financial Insights
+- ✅ Gemini AI Provider
+- ✅ OpenAI AI Provider
+- ✅ AI Provider Abstraction
+- ✅ Redis-backed AI Rate Limiting
+- ✅ Swagger / OpenAPI
+- ✅ PostgreSQL
+- ✅ Flyway
+- ✅ Docker
+- ✅ Docker Compose
+
+### Current Focus
+
+- ⏳ Statistics & Reporting
+- ⏳ Android Application
 
 ## Roadmap
 
@@ -83,8 +116,13 @@ Current milestone:
 - [x] Transactions
 - [x] Budgets
 - [x] Dashboard
-- [ ] Receipt Upload
-- [ ] OCR Processing
-- [ ] AI Expense Analysis
+- [x] Receipt Upload
+- [x] Gemini Vision Receipt Processing
+- [x] Receipt Extraction
+- [x] Receipt Confirmation
+- [x] AI Financial Insights
+- [x] Gemini AI Integration
+- [x] OpenAI Integration
+- [x] Redis Rate Limiting
 - [ ] Statistics & Reports
-- [ ] Automated Tests
+- [ ] Android Application

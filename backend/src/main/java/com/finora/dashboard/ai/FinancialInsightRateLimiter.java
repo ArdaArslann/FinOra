@@ -1,41 +1,36 @@
 package com.finora.dashboard.ai;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@RequiredArgsConstructor
 public class FinancialInsightRateLimiter {
 
     private static final Duration WINDOW =
             Duration.ofSeconds(60);
 
-    private final ConcurrentHashMap<UUID, Instant> lastRequests =
-            new ConcurrentHashMap<>();
+    private static final String KEY_PREFIX =
+            "finora:rate-limit:financial-insight:";
+
+    private final StringRedisTemplate redisTemplate;
 
     public boolean isAllowed(UUID userId) {
 
-        Instant now = Instant.now();
+        String key =
+                KEY_PREFIX + userId;
 
-        return lastRequests.compute(
-                userId,
-                (id, lastRequest) -> {
+        Boolean created =
+                redisTemplate.opsForValue().setIfAbsent(
+                        key,
+                        "1",
+                        WINDOW
+                );
 
-                    if (lastRequest == null) {
-                        return now;
-                    }
-
-                    if (Duration.between(lastRequest, now)
-                            .compareTo(WINDOW) >= 0) {
-
-                        return now;
-                    }
-
-                    return lastRequest;
-                }
-        ) == now;
+        return Boolean.TRUE.equals(created);
     }
 }
