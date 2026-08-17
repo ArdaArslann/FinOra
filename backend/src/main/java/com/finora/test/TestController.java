@@ -30,11 +30,11 @@ public class TestController {
         try {
 
             /*
-             * GEMINI VISION → TÜM BİLGİLER
+             * GEMINI VISION → ALL INFO
              *
-             * Doğrudan görüntüyü gönderiyoruz.
-             * Tek adımda merchant, total, date,
-             * currency ve category çıkıyor.
+             * We send the image directly.
+             * In a single step, merchant, total, date,
+             * currency and category are extracted.
              */
             var result =
                     receiptExtractor.extract(

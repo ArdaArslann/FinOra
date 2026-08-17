@@ -18,23 +18,23 @@ public class ReceiptTextParser implements ReceiptParser {
      * 1.500,00
      * 1.250.500,99
      * 13.85
-     * 1 500,00   (OCR bazen boşlukla ayırır)
-     * *13,85     (yıldız ile başlayan)
+     * 1 500,00   (OCR sometimes separates with a space)
+     * *13,85     (starting with an asterisk)
      */
     private static final String MONEY =
             "\\*?(?:\\d{1,3}(?:[.\\s]\\d{3})*|\\d+)[,.]\\d{2}";
 
     /*
-     * ===== ÖDENECEK TUTAR =====
+     * ===== PAYABLE AMOUNT =====
      *
-     * En yüksek öncelik.
+     * Highest priority.
      *
      * Ödenecek Tutar 1.500,00
      * ÖDENECEK TUTAR : 13,85
      *
-     * OCR hata toleransı:
+     * OCR fault tolerance:
      * - ODÉNECEK, ÖOÉNECEK, ODENECEK
-     * - Ö harfi → O, 0 olabilir
+     * - Ö letter → can be O, 0
      */
     private static final Pattern PAYABLE_TOTAL_PATTERN =
             Pattern.compile(
@@ -44,9 +44,9 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== NAKİT / KREDİ KARTI =====
+     * ===== CASH / CREDIT CARD =====
      *
-     * İkinci öncelik.
+     * Second priority.
      *
      * NAKİT          1.500,00
      * NAKIT           1.500,00
@@ -61,14 +61,14 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== GENEL TOPLAM =====
+     * ===== GRAND TOTAL =====
      *
-     * Üçüncü öncelik.
+     * Third priority.
      *
      * Genel Toplam 1.500,00
      * GENEL TOPLAM : 13,85
      *
-     * OCR hata toleransı:
+     * OCR fault tolerance:
      * - GENEL T0PLAM, GENEL TOPIAM
      */
     private static final Pattern GRAND_TOTAL_PATTERN =
@@ -78,9 +78,9 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== NET TUTAR =====
+     * ===== NET TOTAL =====
      *
-     * Dördüncü öncelik.
+     * Fourth priority.
      *
      * NET TUTAR     1.500,00
      * Net Tutar :   13,85
@@ -92,15 +92,15 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== TUTAR =====
+     * ===== AMOUNT =====
      *
-     * Beşinci öncelik.
+     * Fifth priority.
      *
      * TUTAR         1.500,00
      * Tutar :       13,85
      *
-     * "Alt Tutar" ve "Ödenecek Tutar"
-     * hariç tutulur.
+     * "Alt Tutar" and "Ödenecek Tutar"
+     * are excluded.
      */
     private static final Pattern TUTAR_PATTERN =
             Pattern.compile(
@@ -110,9 +110,9 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== TOPLAM =====
+     * ===== TOTAL =====
      *
-     * Altıncı öncelik.
+     * Sixth priority.
      *
      * TOPLAM *13,85
      * TOPLAM 13,85
@@ -120,12 +120,12 @@ public class ReceiptTextParser implements ReceiptParser {
      * T0PLAM  13,85
      * TOPIAM  13,85
      *
-     * "Alt Toplam" ve "Genel Toplam"
-     * hariç tutulur.
+     * "Alt Toplam" and "Genel Toplam"
+     * are excluded.
      *
-     * Son eşleşme kullanılır çünkü
-     * fişlerde nihai toplam genellikle
-     * en altta yer alır.
+     * Last match is used because
+     * the final total is usually
+     * at the bottom of the receipt.
      */
     private static final Pattern TOTAL_PATTERN =
             Pattern.compile(
@@ -135,15 +135,15 @@ public class ReceiptTextParser implements ReceiptParser {
             );
 
     /*
-     * ===== TOTAL (İngilizce) =====
+     * ===== TOTAL (English) =====
      *
-     * Yedinci öncelik.
+     * Seventh priority.
      *
      * TOTAL    13.85
      * Total :  13.85
      * AMOUNT   13.85
      *
-     * "Subtotal" hariç tutulur.
+     * "Subtotal" is excluded.
      */
     private static final Pattern TOTAL_EN_PATTERN =
             Pattern.compile(
@@ -198,7 +198,7 @@ public class ReceiptTextParser implements ReceiptParser {
         BigDecimal total;
 
         /*
-         * 1. ÖDENECEK TUTAR — En güvenilir
+         * 1. PAYABLE AMOUNT — Most reliable
          */
         total = findMoney(
                 PAYABLE_TOTAL_PATTERN,
@@ -216,7 +216,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 2. NAKİT / KREDİ KARTI
+         * 2. CASH / CREDIT CARD
          */
         total = findMoney(
                 PAYMENT_METHOD_PATTERN,
@@ -234,7 +234,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 3. GENEL TOPLAM
+         * 3. GRAND TOTAL
          */
         total = findMoney(
                 GRAND_TOTAL_PATTERN,
@@ -252,7 +252,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 4. NET TUTAR
+         * 4. NET TOTAL
          */
         total = findMoney(
                 NET_TOTAL_PATTERN,
@@ -270,7 +270,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 5. TUTAR (yalın)
+         * 5. AMOUNT (bare)
          */
         total = findMoney(
                 TUTAR_PATTERN,
@@ -288,7 +288,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 6. TOPLAM — Son eşleşme
+         * 6. TOTAL — Last match
          */
         total = findMoney(
                 TOTAL_PATTERN,
@@ -306,7 +306,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 7. TOTAL (İngilizce)
+         * 7. TOTAL (English)
          */
         total = findMoney(
                 TOTAL_EN_PATTERN,
@@ -324,7 +324,7 @@ public class ReceiptTextParser implements ReceiptParser {
         }
 
         /*
-         * 8. AMOUNT / DUE (İngilizce)
+         * 8. AMOUNT / DUE (English)
          */
         total = findMoney(
                 AMOUNT_EN_PATTERN,
@@ -349,12 +349,12 @@ public class ReceiptTextParser implements ReceiptParser {
     }
 
     /**
-     * Pattern ile eşleşen tutarı bul.
+     * Find the amount matching the pattern.
      *
-     * useLast=true olduğunda son eşleşmeyi
-     * kullanır. Fişlerde nihai toplam genellikle
-     * en altta yer aldığı için TOPLAM pattern'i
-     * için son eşleşme tercih edilir.
+     * Uses the last match when useLast=true.
+     * Since the final total on receipts is usually
+     * at the bottom, the last match is preferred
+     * for the TOTAL pattern.
      */
     private BigDecimal findMoney(
             Pattern pattern,
@@ -400,14 +400,14 @@ public class ReceiptTextParser implements ReceiptParser {
         value = value.trim();
 
         /*
-         * Yıldız temizle (fişlerde *13,85 gibi)
+         * Clean asterisk (like *13,85 in receipts)
          */
         if (value.startsWith("*")) {
             value = value.substring(1);
         }
 
         /*
-         * OCR'ın eklediği boşlukları temizle
+         * Clean spaces added by OCR
          * "1 500,00" → "1500,00"
          */
         value = value.replaceAll("\\s+", "");

@@ -404,9 +404,9 @@ public class GeminiVisionReceiptExtractor
         }
 
         /*
-         * Gemini bazen Türk formatında
-         * (1.500,00) döndürebilir.
-         * Bunu handle et.
+         * Gemini sometimes returns in Turkish
+         * format (1.500,00).
+         * Handle this.
          */
         if (text.contains(",")) {
             text = text
