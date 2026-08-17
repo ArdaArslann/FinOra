@@ -41,7 +41,7 @@ public class OpenAIFinancialInsightGenerator
 
         long start = System.currentTimeMillis();
 
-        System.out.println("OPENAI REQUEST START");
+        
 
         Map<String, Object> content =
                 Map.of(
@@ -169,22 +169,14 @@ public class OpenAIFinancialInsightGenerator
 
         long requestEnd = System.currentTimeMillis();
 
-        System.out.println(
-                "OPENAI REQUEST TIME: "
-                        + (requestEnd - requestStart)
-                        + " ms"
-        );
+        
 
         FinancialInsightResponse result =
                 parseResponse(response);
 
         long end = System.currentTimeMillis();
 
-        System.out.println(
-                "TOTAL AI TIME: "
-                        + (end - start)
-                        + " ms"
-        );
+        
 
         return result;
     }

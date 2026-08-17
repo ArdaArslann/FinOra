@@ -58,9 +58,7 @@ public class GeminiVisionReceiptExtractor
         long start =
                 System.currentTimeMillis();
 
-        System.out.println(
-                "GEMINI VISION RECEIPT START"
-        );
+        
 
         try {
 
@@ -79,23 +77,15 @@ public class GeminiVisionReceiptExtractor
                 );
             }
 
-            System.err.println(
-                    "GEMINI VISION FAILED. "
-                            + "Retrying in 5 seconds..."
-            );
+            
 
-            System.err.println(
-                    "Reason: "
-                            + firstException.getMessage()
-            );
+            
 
             waitBeforeRetry();
 
             try {
 
-                System.out.println(
-                        "GEMINI VISION RETRY START"
-                );
+                
 
                 return executeRequest(
                         imageData,
@@ -116,11 +106,7 @@ public class GeminiVisionReceiptExtractor
             long elapsed =
                     System.currentTimeMillis() - start;
 
-            System.out.println(
-                    "GEMINI VISION TOTAL TIME: "
-                            + elapsed
-                            + " ms"
-            );
+            
         }
     }
 
@@ -215,11 +201,7 @@ public class GeminiVisionReceiptExtractor
                 System.currentTimeMillis()
                         - requestStart;
 
-        System.out.println(
-                "GEMINI VISION REQUEST TIME: "
-                        + elapsed
-                        + " ms"
-        );
+        
 
         return parseResponse(
                 response.text()
@@ -230,15 +212,11 @@ public class GeminiVisionReceiptExtractor
             String jsonText
     ) {
 
-        System.out.println(
-                "========== GEMINI VISION RAW JSON =========="
-        );
+        
 
-        System.out.println(jsonText);
+        
 
-        System.out.println(
-                "============================================="
-        );
+        
 
         try {
 
@@ -261,33 +239,19 @@ public class GeminiVisionReceiptExtractor
             String suggestedCategory =
                     nullableText(node, "suggestedCategory");
 
-            System.out.println(
-                    "========== GEMINI EXTRACTION =========="
-            );
+            
 
-            System.out.println(
-                    "MERCHANT = " + merchantName
-            );
+            
 
-            System.out.println(
-                    "TOTAL = " + totalAmount
-            );
+            
 
-            System.out.println(
-                    "DATE = " + transactionDate
-            );
+            
 
-            System.out.println(
-                    "CURRENCY = " + currency
-            );
+            
 
-            System.out.println(
-                    "CATEGORY = " + suggestedCategory
-            );
+            
 
-            System.out.println(
-                    "======================================="
-            );
+            
 
             return new ReceiptExtractionResult(
                     merchantName,

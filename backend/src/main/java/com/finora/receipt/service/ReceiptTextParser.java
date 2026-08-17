@@ -166,29 +166,19 @@ public class ReceiptTextParser implements ReceiptParser {
             );
         }
 
-        System.out.println(
-                "========== OCR TEXT FOR PARSER =========="
-        );
+        
 
-        System.out.println(ocrText);
+        
 
-        System.out.println(
-                "=========================================="
-        );
+        
 
         BigDecimal total = extractTotal(ocrText);
 
-        System.out.println(
-                "========== PARSED RECEIPT =========="
-        );
+        
 
-        System.out.println(
-                "TOTAL = " + total
-        );
+        
 
-        System.out.println(
-                "===================================="
-        );
+        
 
         return new ParsedReceipt(total);
     }
@@ -208,9 +198,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = ÖDENECEK TUTAR"
-            );
+            
 
             return total;
         }
@@ -226,9 +214,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = NAKİT/KREDİ KARTI"
-            );
+            
 
             return total;
         }
@@ -244,9 +230,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = GENEL TOPLAM"
-            );
+            
 
             return total;
         }
@@ -262,9 +246,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = NET TUTAR"
-            );
+            
 
             return total;
         }
@@ -280,9 +262,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = TUTAR"
-            );
+            
 
             return total;
         }
@@ -298,9 +278,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = TOPLAM"
-            );
+            
 
             return total;
         }
@@ -316,9 +294,7 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = TOTAL (EN)"
-            );
+            
 
             return total;
         }
@@ -334,16 +310,12 @@ public class ReceiptTextParser implements ReceiptParser {
 
         if (total != null) {
 
-            System.out.println(
-                    "TOTAL TYPE = AMOUNT/DUE (EN)"
-            );
+            
 
             return total;
         }
 
-        System.out.println(
-                "TOTAL NOT FOUND"
-        );
+        
 
         return null;
     }
@@ -386,9 +358,7 @@ public class ReceiptTextParser implements ReceiptParser {
             lastMatch = matcher.group(1);
         }
 
-        System.out.println(
-                "TOTAL MATCH = [" + lastMatch + "]"
-        );
+        
 
         return parseTurkishMoney(lastMatch);
     }

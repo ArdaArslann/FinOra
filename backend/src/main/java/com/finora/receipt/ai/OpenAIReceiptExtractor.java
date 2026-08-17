@@ -256,15 +256,11 @@ public class OpenAIReceiptExtractor
             String jsonText =
                     findOutputText(root);
 
-            System.out.println(
-                    "========== OPENAI RAW JSON =========="
-            );
+            
 
-            System.out.println(jsonText);
+            
 
-            System.out.println(
-                    "====================================="
-            );
+            
 
             JsonNode extracted =
                     objectMapper.readTree(
@@ -301,38 +297,19 @@ public class OpenAIReceiptExtractor
                             "suggestedCategory"
                     );
 
-            System.out.println(
-                    "========== AI EXTRACTION =========="
-            );
+            
 
-            System.out.println(
-                    "MERCHANT = " +
-                            merchantName
-            );
+            
 
-            System.out.println(
-                    "TOTAL = " +
-                            totalAmount
-            );
+            
 
-            System.out.println(
-                    "DATE = " +
-                            transactionDate
-            );
+            
 
-            System.out.println(
-                    "CURRENCY = " +
-                            currency
-            );
+            
 
-            System.out.println(
-                    "CATEGORY = " +
-                            suggestedCategory
-            );
+            
 
-            System.out.println(
-                    "==================================="
-            );
+            
 
             return new ReceiptExtractionResult(
                     merchantName,

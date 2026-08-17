@@ -98,56 +98,25 @@ public class ReceiptExtractionServiceImpl
                     ReceiptStatus.PROCESSED
             );
 
-            System.out.println(
-                    "========== RECEIPT EXTRACTION =========="
-            );
+            
 
-            System.out.println(
-                    "TOTAL = " +
-                            result.totalAmount()
-            );
+            
 
-            System.out.println(
-                    "MERCHANT = " +
-                            result.merchantName()
-            );
+            
 
-            System.out.println(
-                    "DATE = " +
-                            result.transactionDate()
-            );
+            
 
-            System.out.println(
-                    "CURRENCY = " +
-                            result.currency()
-            );
+            
 
-            System.out.println(
-                    "CATEGORY = " +
-                            result.suggestedCategory()
-            );
+            
 
-            System.out.println(
-                    "========================================="
-            );
+            
 
-            System.out.println(
-                    "DOWNLOAD: " +
-                            (afterDownload - start) +
-                            " ms"
-            );
+            
 
-            System.out.println(
-                    "EXTRACTION: " +
-                            (afterExtraction - afterDownload) +
-                            " ms"
-            );
+            
 
-            System.out.println(
-                    "TOTAL TIME: " +
-                            (afterExtraction - start) +
-                            " ms"
-            );
+            
 
         } catch (Exception e) {
 
@@ -155,10 +124,7 @@ public class ReceiptExtractionServiceImpl
                     ReceiptStatus.FAILED
             );
 
-            System.err.println(
-                    "Receipt extraction failed: " +
-                            e.getMessage()
-            );
+            
 
             e.printStackTrace();
 
