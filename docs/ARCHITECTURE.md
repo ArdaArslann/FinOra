@@ -25,6 +25,7 @@ The main application domains are:
 - Receipts
 - Dashboard
 - AI Financial Insights
+- Statistics & Reporting
 
 ---
 

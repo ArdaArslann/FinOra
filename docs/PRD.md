@@ -418,6 +418,7 @@ The main API domains are:
 * Budgets
 * Receipts
 * Dashboard
+* Statistics & Reporting
 
 API requests use DTOs rather than exposing persistence entities directly.
 
@@ -576,6 +577,7 @@ The following backend capabilities are currently implemented:
 * Swagger / OpenAPI API documentation
 * PostgreSQL persistence
 * Flyway database migrations
+* Statistics & Reporting API
 * Dockerized backend environment
 * Redis infrastructure
 

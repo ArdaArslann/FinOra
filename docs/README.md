@@ -33,6 +33,7 @@ The project is designed as a portfolio-quality, production-oriented application 
 - Global Exception Handling
 - Request Validation
 - Swagger / OpenAPI Documentation
+- Statistics & Reporting
 - PostgreSQL Persistence
 - Flyway Database Migrations
 - Dockerized Backend
@@ -103,10 +104,10 @@ The project is designed as a portfolio-quality, production-oriented application 
 - ✅ Flyway
 - ✅ Docker
 - ✅ Docker Compose
+- ✅ Statistics & Reporting
 
 ### Current Focus
 
-- ⏳ Statistics & Reporting
 - ⏳ Android Application
 
 ## Roadmap
@@ -124,5 +125,5 @@ The project is designed as a portfolio-quality, production-oriented application 
 - [x] Gemini AI Integration
 - [x] OpenAI Integration
 - [x] Redis Rate Limiting
-- [ ] Statistics & Reports
+- [x] Statistics & Reports
 - [ ] Android Application
