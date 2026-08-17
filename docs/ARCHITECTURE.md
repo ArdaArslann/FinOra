@@ -427,3 +427,30 @@ Currently supported implementations include:
 
 The service layer is therefore independent from the specific AI provider.
 
+---
+
+## Android Client Architecture
+
+The Android application acts as a client of the FinOra REST API. It handles presentation, UI state, networking, session management, and local caching, while the backend remains the source of truth.
+
+### Layers
+
+- **Presentation**: Jetpack Compose screens, ViewModels, UI state, and navigation. ViewModels communicate with repositories or use cases, never directly with Retrofit.
+- **Domain**: Use cases, domain models, and repository interfaces.
+- **Data**: Retrofit APIs, DTOs (representing the exact JSON contract, separate from domain models), mappers, repositories, and Room database.
+- **Core**: Hilt for dependency injection, OkHttp, authentication interceptor, centralized error handling, and utilities.
+
+### API Contract & Networking
+
+- **Contract**: Swagger/OpenAPI is the authoritative contract for endpoints and JSON fields.
+- **Networking**: Retrofit and OkHttp are configured via a single Hilt instance. API interfaces include `AuthApi`, `CategoryApi`, `TransactionApi`, `BudgetApi`, `DashboardApi`, `StatisticsApi`, `ReceiptApi`, and `FinancialInsightApi`.
+- **Authentication**: TokenManager backed by DataStore stores access and refresh tokens. An OkHttp interceptor attaches the token to protected calls and implements automatic refresh on 401.
+
+### Local Caching
+
+- **Room**: Used selectively after online API flows are stable to cache categories, transactions, or dashboard data for faster rendering, but it does not replace the backend as the source of truth.
+
+### Security & Environment
+
+- **Security**: No hardcoded production secrets. JWTs, refresh tokens, and sensitive data are never logged. Tokens are cleared on logout and failed refresh.
+- **Configuration**: Environment base URLs are configurable (e.g., `10.0.2.2` for the emulator to reach the host backend).
