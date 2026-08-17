@@ -2,6 +2,7 @@ package com.finora.transaction.repository;
 
 import com.finora.category.entity.CategoryEntity;
 import com.finora.dashboard.projection.BudgetSpentProjection;
+import com.finora.dashboard.projection.CategorySpentProjection;
 import com.finora.transaction.entity.TransactionEntity;
 import com.finora.transaction.enums.TransactionType;
 import com.finora.user.entity.UserEntity;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,26 +23,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     boolean existsByCategory(CategoryEntity category);
 
     Optional<TransactionEntity> findByIdAndUser(UUID id, UserEntity user);
-
-    @Query("""
-
-            SELECT COALESCE(SUM(t.amount), 0)
-
-            FROM TransactionEntity t
-
-            WHERE t.user = :user
-
-            AND t.type = :type
-
-            """)
-    BigDecimal sumAmountByUserAndType(
-
-            @Param("user") UserEntity user,
-
-            @Param("type") TransactionType type
-
-    );
-
 
     List<TransactionEntity> findTop5ByUserOrderByTransactionDateDesc(UserEntity user);
 
@@ -59,6 +41,51 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     GROUP BY b.id
 """)
     List<BudgetSpentProjection> findBudgetSpentByUser(
+            @Param("user") UserEntity user,
+            @Param("type") TransactionType type
+    );
+
+    @Query("""
+    SELECT new com.finora.dashboard.projection.CategorySpentProjection(
+        t.category.id,
+        t.category.name,
+        SUM(t.amount)
+    )
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.type = :type
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+    GROUP BY t.category.id, t.category.name
+    ORDER BY SUM(t.amount) DESC
+""")
+    List<CategorySpentProjection> findCategorySpendingByUserAndDateBetween(
+            @Param("user") UserEntity user,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+    SELECT COALESCE(SUM(t.amount), 0)
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.type = :type
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+""")
+    BigDecimal sumAmountByUserAndTypeAndTransactionDateBetween(
+            @Param("user") UserEntity user,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+    SELECT COALESCE(SUM(t.amount), 0)
+    FROM TransactionEntity t
+    WHERE t.user = :user
+      AND t.type = :type
+""")
+    BigDecimal sumAmountByUserAndType(
             @Param("user") UserEntity user,
             @Param("type") TransactionType type
     );

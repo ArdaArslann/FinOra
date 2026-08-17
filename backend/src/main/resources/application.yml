@@ -8,7 +8,7 @@ spring:
       max-request-size: 5MB
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/finora
+    url: jdbc:postgresql://postgres:5432/finora
     username: finora
     password: ***REMOVED***
 
@@ -23,7 +23,7 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
 jwt:
@@ -42,3 +42,7 @@ server:
 openai:
   api-key: ${OPENAI_API_KEY}
   model: gpt-5
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: gemini-3.5-flash-lite
