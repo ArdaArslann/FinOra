@@ -62,7 +62,6 @@ public class ReceiptExtractionServiceImpl
              * 2. GEMINI VISION İLE TÜM BİLGİLERİ ÇIKAR
              *
              * Doğrudan görüntüyü gönderiyoruz.
-             * Tesseract OCR + regex parser yerine
              * Gemini Vision API tek adımda:
              * - merchantName
              * - totalAmount
