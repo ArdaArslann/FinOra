@@ -22,5 +22,5 @@ data class StatisticsResponse(
 
 interface StatisticsApi {
     @GET("statistics")
-    suspend fun getStatistics(): Response<StatisticsResponse>
+    suspend fun getStatistics(): Response<ApiResponse<StatisticsResponse>>
 }

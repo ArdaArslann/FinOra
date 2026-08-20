@@ -23,11 +23,11 @@ data class CreateTransactionRequest(
 
 interface TransactionApi {
     @GET("transactions")
-    suspend fun getTransactions(): Response<List<TransactionDto>>
+    suspend fun getTransactions(): Response<ApiResponse<List<TransactionDto>>>
 
     @POST("transactions")
-    suspend fun createTransaction(@Body request: CreateTransactionRequest): Response<TransactionDto>
+    suspend fun createTransaction(@Body request: CreateTransactionRequest): Response<ApiResponse<TransactionDto>>
 
     @DELETE("transactions/{id}")
-    suspend fun deleteTransaction(@Path("id") id: String): Response<Unit>
+    suspend fun deleteTransaction(@Path("id") id: String): Response<ApiResponse<Unit>>
 }

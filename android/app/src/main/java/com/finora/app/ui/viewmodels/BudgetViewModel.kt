@@ -30,10 +30,10 @@ class BudgetViewModel @Inject constructor(
             _budgets.value = Resource.Loading()
             try {
                 val response = budgetApi.getBudgets()
-                if (response.isSuccessful && response.body() != null) {
-                    _budgets.value = Resource.Success(response.body()!!)
+                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                    _budgets.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _budgets.value = Resource.Error(response.message() ?: "Failed to fetch budgets")
+                    _budgets.value = Resource.Error(response.body()?.error?.message ?: "Failed to load budgets")
                 }
             } catch (e: Exception) {
                 _budgets.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -43,13 +43,17 @@ class BudgetViewModel @Inject constructor(
 
     fun createBudget(request: CreateBudgetRequest) {
         viewModelScope.launch {
+            _createState.value = Resource.Loading()
             try {
                 val response = budgetApi.createBudget(request)
-                if (response.isSuccessful) {
-                    fetchBudgets()
+                if (response.isSuccessful && response.body()?.success == true) {
+                    _createState.value = Resource.Success(Unit)
+                    fetchBudgets() // refresh list
+                } else {
+                    _createState.value = Resource.Error(response.body()?.error?.message ?: "Failed to create budget")
                 }
             } catch (e: Exception) {
-                // Handle error
+                _createState.value = Resource.Error(e.localizedMessage ?: "Connection error")
             }
         }
     }

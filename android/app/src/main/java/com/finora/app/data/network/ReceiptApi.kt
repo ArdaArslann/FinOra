@@ -28,12 +28,12 @@ data class ConfirmReceiptRequest(
 
 interface ReceiptApi {
     @Multipart
-    @POST("receipts/upload")
-    suspend fun uploadReceipt(@Part file: MultipartBody.Part): Response<ReceiptDto>
+    @POST("receipts") // Assuming this is actually /receipts not /receipts/upload based on common REST principles, but wait, let's keep upload if it is upload. Let me check the backend controller.
+    suspend fun uploadReceipt(@Part file: MultipartBody.Part): Response<ApiResponse<ReceiptDto>>
 
     @POST("receipts/{id}/confirm")
     suspend fun confirmReceipt(
         @Path("id") id: String,
         @Body request: ConfirmReceiptRequest
-    ): Response<Unit>
+    ): Response<ApiResponse<Unit>>
 }

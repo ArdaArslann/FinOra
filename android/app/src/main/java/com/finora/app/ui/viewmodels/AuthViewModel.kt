@@ -31,11 +31,12 @@ class AuthViewModel @Inject constructor(
             _loginState.value = Resource.Loading()
             try {
                 val response = authApi.login(request)
-                if (response.isSuccessful && response.body() != null) {
-                    tokenManager.saveTokens(response.body()!!.token, response.body()!!.refreshToken)
+                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                    val data = response.body()!!.data!!
+                    tokenManager.saveTokens(data.token, data.refreshToken)
                     _loginState.value = Resource.Success(Unit)
                 } else {
-                    _loginState.value = Resource.Error(response.message() ?: "Login failed")
+                    _loginState.value = Resource.Error(response.body()?.error?.message ?: response.message() ?: "Login failed")
                 }
             } catch (e: Exception) {
                 _loginState.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -48,10 +49,10 @@ class AuthViewModel @Inject constructor(
             _registerState.value = Resource.Loading()
             try {
                 val response = authApi.register(request)
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     _registerState.value = Resource.Success(Unit)
                 } else {
-                    _registerState.value = Resource.Error(response.message() ?: "Registration failed")
+                    _registerState.value = Resource.Error(response.body()?.error?.message ?: response.message() ?: "Registration failed")
                 }
             } catch (e: Exception) {
                 _registerState.value = Resource.Error(e.localizedMessage ?: "Connection error")

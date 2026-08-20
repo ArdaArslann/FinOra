@@ -31,28 +31,24 @@ class DashboardViewModel @Inject constructor(
     fun fetchDashboardData() {
         viewModelScope.launch {
             _summaryState.value = Resource.Loading()
+            _insightState.value = Resource.Loading()
+            
             try {
-                val response = dashboardApi.getSummary()
-                if (response.isSuccessful && response.body() != null) {
-                    _summaryState.value = Resource.Success(response.body()!!)
+                val summaryResponse = dashboardApi.getSummary()
+                if (summaryResponse.isSuccessful && summaryResponse.body()?.success == true && summaryResponse.body()?.data != null) {
+                    _summaryState.value = Resource.Success(summaryResponse.body()!!.data!!)
                 } else {
-                    _summaryState.value = Resource.Error(response.message() ?: "An error occurred")
+                    _summaryState.value = Resource.Error(summaryResponse.body()?.error?.message ?: "Failed to load summary")
+                }
+
+                val insightResponse = dashboardApi.getAiInsights()
+                if (insightResponse.isSuccessful && insightResponse.body()?.success == true && insightResponse.body()?.data != null) {
+                    _insightState.value = Resource.Success(insightResponse.body()!!.data!!)
+                } else {
+                    _insightState.value = Resource.Error(insightResponse.body()?.error?.message ?: "Failed to load insights")
                 }
             } catch (e: Exception) {
                 _summaryState.value = Resource.Error(e.localizedMessage ?: "Connection error")
-            }
-        }
-
-        viewModelScope.launch {
-            _insightState.value = Resource.Loading()
-            try {
-                val response = dashboardApi.getAiInsights()
-                if (response.isSuccessful && response.body() != null) {
-                    _insightState.value = Resource.Success(response.body()!!)
-                } else {
-                    _insightState.value = Resource.Error(response.message() ?: "An error occurred")
-                }
-            } catch (e: Exception) {
                 _insightState.value = Resource.Error(e.localizedMessage ?: "Connection error")
             }
         }
