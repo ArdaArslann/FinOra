@@ -33,7 +33,7 @@ fun FinOraNavGraph(navController: NavHostController) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Screen.Dashboard.route) {
+                    navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -50,24 +50,8 @@ fun FinOraNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(Screen.Dashboard.route) {
-            DashboardScreen()
-        }
-
-        composable(Screen.Transactions.route) {
-            TransactionScreen()
-        }
-
-        composable(Screen.Receipts.route) {
-            ReceiptScreen()
-        }
-
-        composable(Screen.Budgets.route) {
-            BudgetScreen()
-        }
-
-        composable(Screen.Statistics.route) {
-            StatisticsScreen()
+        composable(Screen.Main.route) {
+            com.finora.app.ui.screens.MainScreen()
         }
     }
 }
