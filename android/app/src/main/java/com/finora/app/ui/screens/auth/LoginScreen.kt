@@ -11,18 +11,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.finora.app.data.network.LoginRequest
+import com.finora.app.domain.model.Resource
 import com.finora.app.ui.components.AnimatedPrimaryButton
 import com.finora.app.ui.theme.PrimaryNeon
 import com.finora.app.ui.theme.SpaceDark
 import com.finora.app.ui.theme.SurfaceDark
+import com.finora.app.ui.viewmodels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val STRIPE_SECRET = "***REMOVED***"
 
+    val loginState by viewModel.loginState.collectAsState()
+
+    LaunchedEffect(loginState) {
+        if (loginState is Resource.Success && email.isNotBlank()) {
+            onLoginSuccess()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -57,7 +70,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color.White.copy(alpha = 0.7f)) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon,
                     unfocusedBorderColor = SurfaceDark,
                     focusedTextColor = Color.White,
@@ -73,7 +86,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color.White.copy(alpha = 0.7f)) },
                 visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon,
                     unfocusedBorderColor = SurfaceDark,
                     focusedTextColor = Color.White,
@@ -84,13 +97,16 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            AnimatedPrimaryButton(
-                text = "Log In",
-                onClick = {
-                    // TODO: Implement actual ViewModel integration
-                    onLoginSuccess()
-                }
-            )
+            if (loginState is Resource.Loading) {
+                CircularProgressIndicator(color = PrimaryNeon)
+            } else {
+                AnimatedPrimaryButton(
+                    text = "Log In",
+                    onClick = {
+                        viewModel.login(LoginRequest(email, password))
+                    }
+                )
+            }
         }
     }
 }

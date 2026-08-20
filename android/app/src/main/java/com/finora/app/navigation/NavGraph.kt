@@ -1,0 +1,73 @@
+package com.finora.app.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.finora.app.ui.screens.OnboardingScreen
+import com.finora.app.ui.screens.auth.LoginScreen
+import com.finora.app.ui.screens.dashboard.DashboardScreen
+import com.finora.app.ui.screens.transactions.TransactionScreen
+
+import com.finora.app.ui.screens.receipts.ReceiptScreen
+import com.finora.app.ui.screens.auth.RegisterScreen
+import com.finora.app.ui.screens.budget.BudgetScreen
+import com.finora.app.ui.screens.statistics.StatisticsScreen
+
+@Composable
+fun FinOraNavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Onboarding.route
+    ) {
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onGetStartedClick = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Dashboard.route) {
+            DashboardScreen()
+        }
+
+        composable(Screen.Transactions.route) {
+            TransactionScreen()
+        }
+
+        composable(Screen.Receipts.route) {
+            ReceiptScreen()
+        }
+
+        composable(Screen.Budgets.route) {
+            BudgetScreen()
+        }
+
+        composable(Screen.Statistics.route) {
+            StatisticsScreen()
+        }
+    }
+}
