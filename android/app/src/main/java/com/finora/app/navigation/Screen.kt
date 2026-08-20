@@ -1,0 +1,12 @@
+package com.finora.app.navigation
+
+sealed class Screen(val route: String) {
+    object Onboarding : Screen("onboarding")
+    object Login : Screen("login")
+    object Register : Screen("register")
+    object Dashboard : Screen("dashboard")
+    object Transactions : Screen("transactions")
+    object Receipts : Screen("receipts")
+    object Budgets : Screen("budgets")
+    object Statistics : Screen("statistics")
+}
