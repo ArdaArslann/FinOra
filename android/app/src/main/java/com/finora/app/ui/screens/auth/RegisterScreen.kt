@@ -34,9 +34,8 @@ fun RegisterScreen(
     val registerState by viewModel.registerState.collectAsState()
 
     LaunchedEffect(registerState) {
-        if (registerState is Resource.Success) {
-            // Because our idle state is also success (Unit) initially, we'd normally use a side-effect channel.
-            // For now, if we successfully register, we proceed.
+        if (registerState is Resource.Success && registerState.data != null) {
+            onRegisterSuccess()
         }
     }
 
@@ -65,7 +64,7 @@ fun RegisterScreen(
                 value = firstName,
                 onValueChange = { firstName = it },
                 label = { Text("First Name", color = Color.White.copy(alpha = 0.7f)) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon, unfocusedBorderColor = SurfaceDark, focusedTextColor = Color.White, unfocusedTextColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -77,7 +76,7 @@ fun RegisterScreen(
                 value = lastName,
                 onValueChange = { lastName = it },
                 label = { Text("Last Name", color = Color.White.copy(alpha = 0.7f)) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon, unfocusedBorderColor = SurfaceDark, focusedTextColor = Color.White, unfocusedTextColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -89,7 +88,7 @@ fun RegisterScreen(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color.White.copy(alpha = 0.7f)) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon, unfocusedBorderColor = SurfaceDark, focusedTextColor = Color.White, unfocusedTextColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -102,13 +101,22 @@ fun RegisterScreen(
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color.White.copy(alpha = 0.7f)) },
                 visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryNeon, unfocusedBorderColor = SurfaceDark, focusedTextColor = Color.White, unfocusedTextColor = Color.White
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
             
             Spacer(modifier = Modifier.height(32.dp))
+
+            if (registerState is Resource.Error) {
+                Text(
+                    text = registerState.message ?: "An error occurred",
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             if (registerState is Resource.Loading) {
                 CircularProgressIndicator(color = PrimaryNeon)
@@ -117,7 +125,6 @@ fun RegisterScreen(
                     text = "Sign Up",
                     onClick = {
                         viewModel.register(RegisterRequest(firstName, lastName, email, password))
-                        onRegisterSuccess() // Call it optimistic for now to jump to login
                     }
                 )
             }

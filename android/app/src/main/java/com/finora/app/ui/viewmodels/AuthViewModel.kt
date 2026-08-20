@@ -20,11 +20,11 @@ class AuthViewModel @Inject constructor(
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
-    private val _loginState = MutableStateFlow<Resource<Unit>>(Resource.Success(Unit)) // Idle state is represented as Unit for now
-    val loginState: StateFlow<Resource<Unit>> = _loginState.asStateFlow()
+    private val _loginState = MutableStateFlow<Resource<Unit?>>(Resource.Success(null)) // Idle state is represented as null data
+    val loginState: StateFlow<Resource<Unit?>> = _loginState.asStateFlow()
 
-    private val _registerState = MutableStateFlow<Resource<Unit>>(Resource.Success(Unit))
-    val registerState: StateFlow<Resource<Unit>> = _registerState.asStateFlow()
+    private val _registerState = MutableStateFlow<Resource<Unit?>>(Resource.Success(null))
+    val registerState: StateFlow<Resource<Unit?>> = _registerState.asStateFlow()
 
     fun login(request: LoginRequest) {
         viewModelScope.launch {

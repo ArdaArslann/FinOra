@@ -32,7 +32,7 @@ fun LoginScreen(
     val loginState by viewModel.loginState.collectAsState()
 
     LaunchedEffect(loginState) {
-        if (loginState is Resource.Success && email.isNotBlank()) {
+        if (loginState is Resource.Success && loginState.data != null && email.isNotBlank()) {
             onLoginSuccess()
         }
     }
@@ -96,6 +96,15 @@ fun LoginScreen(
             )
             
             Spacer(modifier = Modifier.height(32.dp))
+
+            if (loginState is Resource.Error) {
+                Text(
+                    text = loginState.message ?: "An error occurred",
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             
             if (loginState is Resource.Loading) {
                 CircularProgressIndicator(color = PrimaryNeon)
