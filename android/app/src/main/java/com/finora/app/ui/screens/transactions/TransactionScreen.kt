@@ -105,6 +105,10 @@ fun TransactionScreen(
                     }
                 }
             }
+        } else if (transactionState is Resource.Error) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(transactionState.message ?: "An error occurred", color = ErrorRed, fontSize = 16.sp)
+            }
         }
     }
 }

@@ -69,6 +69,10 @@ fun BudgetScreen(
                     }
                 }
             }
+        } else if (budgetState is Resource.Error) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(budgetState.message ?: "An error occurred", color = ErrorRed, fontSize = 16.sp)
+            }
         }
     }
 }
