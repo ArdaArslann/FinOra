@@ -19,8 +19,8 @@ data class CreateCategoryRequest(
 
 interface CategoryApi {
     @GET("categories")
-    suspend fun getCategories(): Response<List<CategoryDto>>
+    suspend fun getCategories(): Response<ApiResponse<List<CategoryDto>>>
 
     @POST("categories")
-    suspend fun createCategory(@Body request: CreateCategoryRequest): Response<CategoryDto>
+    suspend fun createCategory(@Body request: CreateCategoryRequest): Response<ApiResponse<CategoryDto>>
 }

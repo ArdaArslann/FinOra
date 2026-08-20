@@ -25,9 +25,9 @@ data class FinancialInsightResponse(
 )
 
 interface DashboardApi {
-    @GET("dashboard/summary")
-    suspend fun getSummary(): Response<DashboardSummaryResponse>
+    @GET("dashboard")
+    suspend fun getSummary(): Response<ApiResponse<DashboardSummaryResponse>>
 
-    @GET("dashboard/ai-insights")
-    suspend fun getAiInsights(): Response<FinancialInsightResponse>
+    @GET("dashboard/insight")
+    suspend fun getAiInsights(): Response<ApiResponse<FinancialInsightResponse>>
 }

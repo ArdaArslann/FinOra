@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/api/v1/" // Localhost mapping for Android Emulator
+    private const val BASE_URL = "http://10.0.2.2:8080/" // Localhost mapping for Android Emulator
 
     @Provides
     @Singleton

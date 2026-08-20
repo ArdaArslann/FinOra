@@ -11,8 +11,8 @@ data class RegisterRequest(val firstName: String, val lastName: String, val emai
 
 interface AuthApi {
     @POST("auth/login")
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
 
     @POST("auth/register")
-    suspend fun register(@Body request: RegisterRequest): Response<Unit>
+    suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<Unit>>
 }

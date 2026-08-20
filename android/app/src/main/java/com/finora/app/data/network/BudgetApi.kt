@@ -21,8 +21,8 @@ data class CreateBudgetRequest(
 
 interface BudgetApi {
     @GET("budgets")
-    suspend fun getBudgets(): Response<List<BudgetDto>>
+    suspend fun getBudgets(): Response<ApiResponse<List<BudgetDto>>>
 
     @POST("budgets")
-    suspend fun createBudget(@Body request: CreateBudgetRequest): Response<BudgetDto>
+    suspend fun createBudget(@Body request: CreateBudgetRequest): Response<ApiResponse<BudgetDto>>
 }

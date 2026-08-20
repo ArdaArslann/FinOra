@@ -30,10 +30,10 @@ class CategoryViewModel @Inject constructor(
             _categories.value = Resource.Loading()
             try {
                 val response = categoryApi.getCategories()
-                if (response.isSuccessful && response.body() != null) {
-                    _categories.value = Resource.Success(response.body()!!)
+                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                    _categories.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _categories.value = Resource.Error(response.message() ?: "Failed to fetch categories")
+                    _categories.value = Resource.Error(response.body()?.error?.message ?: "Failed to fetch categories")
                 }
             } catch (e: Exception) {
                 _categories.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -45,7 +45,7 @@ class CategoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = categoryApi.createCategory(request)
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     fetchCategories()
                 }
             } catch (e: Exception) {

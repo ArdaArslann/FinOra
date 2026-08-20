@@ -30,10 +30,10 @@ class TransactionViewModel @Inject constructor(
             _transactions.value = Resource.Loading()
             try {
                 val response = transactionApi.getTransactions()
-                if (response.isSuccessful && response.body() != null) {
-                    _transactions.value = Resource.Success(response.body()!!)
+                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                    _transactions.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _transactions.value = Resource.Error(response.message() ?: "Failed to fetch transactions")
+                    _transactions.value = Resource.Error(response.body()?.error?.message ?: "Failed to fetch transactions")
                 }
             } catch (e: Exception) {
                 _transactions.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -45,7 +45,7 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = transactionApi.deleteTransaction(id)
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     // Update state locally or re-fetch
                     val currentList = _transactions.value.data?.filter { it.id != id }
                     _transactions.value = Resource.Success(currentList ?: emptyList())
@@ -60,7 +60,7 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = transactionApi.createTransaction(request)
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     fetchTransactions() // Refresh list
                 }
             } catch (e: Exception) {
