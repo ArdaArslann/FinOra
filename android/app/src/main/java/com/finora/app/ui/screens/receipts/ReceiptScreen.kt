@@ -1,5 +1,7 @@
 package com.finora.app.ui.screens.receipts
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.*
@@ -27,25 +29,54 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.finora.app.domain.model.Resource
 import com.finora.app.ui.components.AnimatedPrimaryButton
 import com.finora.app.ui.components.GlassCard
 import com.finora.app.ui.theme.*
-import kotlinx.coroutines.delay
+import com.finora.app.ui.viewmodels.ReceiptViewModel
+import com.finora.app.data.network.ReceiptDto
+import androidx.activity.result.PickVisualMediaRequest
 
 enum class ReceiptState {
-    IDLE, SCANNING, SUCCESS
+    IDLE, SCANNING, SUCCESS, ERROR
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ReceiptScreen() {
+fun ReceiptScreen(
+    viewModel: ReceiptViewModel = hiltViewModel()
+) {
+    val uploadState by viewModel.uploadState.collectAsState()
     var currentState by remember { mutableStateOf(ReceiptState.IDLE) }
+    var errorMessage by remember { mutableStateOf("") }
+    var extractedData by remember { mutableStateOf<ReceiptDto?>(null) }
 
-    // Simulation for scanning process
-    LaunchedEffect(currentState) {
-        if (currentState == ReceiptState.SCANNING) {
-            delay(3000) // Simulate AI Vision API call
-            currentState = ReceiptState.SUCCESS
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.uploadReceipt(uri)
+        } else {
+            currentState = ReceiptState.IDLE
+        }
+    }
+
+    LaunchedEffect(uploadState) {
+        when (uploadState) {
+            is Resource.Loading -> currentState = ReceiptState.SCANNING
+            is Resource.Success -> {
+                if (uploadState.data != null) {
+                    extractedData = uploadState.data
+                    currentState = ReceiptState.SUCCESS
+                } else {
+                    currentState = ReceiptState.IDLE
+                }
+            }
+            is Resource.Error -> {
+                errorMessage = uploadState.message ?: "Upload failed"
+                currentState = ReceiptState.ERROR
+            }
         }
     }
 
@@ -78,9 +109,24 @@ fun ReceiptScreen() {
 
         AnimatedContent(targetState = currentState, label = "Receipt State") { state ->
             when (state) {
-                ReceiptState.IDLE -> UploadPlaceholder(onUploadClick = { currentState = ReceiptState.SCANNING })
+                ReceiptState.IDLE -> UploadPlaceholder(onUploadClick = { 
+                    photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) 
+                })
                 ReceiptState.SCANNING -> ScanningAnimation()
-                ReceiptState.SUCCESS -> ExtractedDataCard(onConfirm = { currentState = ReceiptState.IDLE })
+                ReceiptState.SUCCESS -> ExtractedDataCard(
+                    data = extractedData,
+                    onConfirm = { 
+                        // Typically we would show confirmation dialog here, or just reset for now
+                        viewModel.resetState() 
+                    }
+                )
+                ReceiptState.ERROR -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = errorMessage, color = Color.Red, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AnimatedPrimaryButton(text = "Try Again", onClick = { viewModel.resetState() })
+                    }
+                }
             }
         }
     }
@@ -155,7 +201,8 @@ fun ScanningAnimation() {
 }
 
 @Composable
-fun ExtractedDataCard(onConfirm: () -> Unit) {
+fun ExtractedDataCard(data: ReceiptDto?, onConfirm: () -> Unit) {
+    val extraction = data?.extraction
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -166,17 +213,17 @@ fun ExtractedDataCard(onConfirm: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text("Merchant", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
-            Text("Starbucks Coffee", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text(extraction?.merchantName ?: "Unknown", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Text("Total Amount", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
-            Text("$12.50", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("${extraction?.currency ?: "$"}${extraction?.totalAmount ?: "0.00"}", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             
             Spacer(modifier = Modifier.height(16.dp))
             
             Text("Suggested Category", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
-            Text("Food & Drink", color = PrimaryNeon, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(extraction?.suggestedCategory ?: "Uncategorized", color = PrimaryNeon, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             
             Spacer(modifier = Modifier.height(32.dp))
             
