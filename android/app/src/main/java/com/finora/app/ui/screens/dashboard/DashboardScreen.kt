@@ -101,6 +101,10 @@ fun DashboardScreen(
                     }
                 }
             }
+        } else if (summaryState is Resource.Error) {
+            Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
+                Text(summaryState.message ?: "Failed to load summary", color = com.finora.app.ui.theme.ErrorRed, fontSize = 16.sp)
+            }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -132,6 +136,10 @@ fun DashboardScreen(
                         fontSize = 14.sp
                     )
                 }
+            }
+        } else if (insightState is Resource.Error) {
+            Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                Text(insightState.message ?: "Failed to load insights", color = com.finora.app.ui.theme.ErrorRed, fontSize = 14.sp)
             }
         }
     }
