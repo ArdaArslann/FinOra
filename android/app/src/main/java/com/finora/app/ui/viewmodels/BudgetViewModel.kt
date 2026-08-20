@@ -21,6 +21,9 @@ class BudgetViewModel @Inject constructor(
     private val _budgets = MutableStateFlow<Resource<List<BudgetDto>>>(Resource.Loading())
     val budgets: StateFlow<Resource<List<BudgetDto>>> = _budgets.asStateFlow()
 
+    private val _createState = MutableStateFlow<Resource<Unit>>(Resource.Success(Unit))
+    val createState: StateFlow<Resource<Unit>> = _createState.asStateFlow()
+
     init {
         fetchBudgets()
     }
