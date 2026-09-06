@@ -23,10 +23,11 @@ public class ReceiptController {
     private final ReceiptService receiptService;
 
     @PostMapping(consumes = "multipart/form-data")
-    public ReceiptResponse upload(
+    public ResponseEntity<ApiResponse<ReceiptResponse>> upload(
             @RequestParam("file") MultipartFile file
     ) {
-        return receiptService.upload(file);
+        ReceiptResponse response = receiptService.upload(file);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping

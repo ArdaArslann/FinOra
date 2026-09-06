@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.finora.app.data.network.CategoryApi
 import com.finora.app.data.network.CategoryDto
 import com.finora.app.data.network.CreateCategoryRequest
+import com.finora.app.data.network.getErrorMessage
 import com.finora.app.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class CategoryViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     _categories.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _categories.value = Resource.Error(response.body()?.error?.message ?: "Failed to fetch categories")
+                    _categories.value = Resource.Error(response.getErrorMessage() ?: "Failed to fetch categories")
                 }
             } catch (e: Exception) {
                 _categories.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -47,6 +48,33 @@ class CategoryViewModel @Inject constructor(
                 val response = categoryApi.createCategory(request)
                 if (response.isSuccessful && response.body()?.success == true) {
                     fetchCategories()
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun updateCategory(id: String, request: CreateCategoryRequest) {
+        viewModelScope.launch {
+            try {
+                val response = categoryApi.updateCategory(id, request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    fetchCategories()
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun deleteCategory(id: String) {
+        viewModelScope.launch {
+            try {
+                val response = categoryApi.deleteCategory(id)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val currentList = _categories.value.data?.filter { it.id != id }
+                    _categories.value = Resource.Success(currentList ?: emptyList())
                 }
             } catch (e: Exception) {
                 // Handle error

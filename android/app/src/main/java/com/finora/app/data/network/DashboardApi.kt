@@ -6,8 +6,11 @@ import retrofit2.http.GET
 data class DashboardSummaryResponse(
     val totalIncome: Double,
     val totalExpense: Double,
-    val currentBalance: Double,
-    val incomePercentageChange: Double
+    val balance: Double
+)
+
+data class DashboardResponseDto(
+    val summary: DashboardSummaryResponse
 )
 
 data class BudgetInsightDto(
@@ -26,7 +29,7 @@ data class FinancialInsightResponse(
 
 interface DashboardApi {
     @GET("dashboard")
-    suspend fun getSummary(): Response<ApiResponse<DashboardSummaryResponse>>
+    suspend fun getSummary(): Response<ApiResponse<DashboardResponseDto>>
 
     @GET("dashboard/insight")
     suspend fun getAiInsights(): Response<ApiResponse<FinancialInsightResponse>>

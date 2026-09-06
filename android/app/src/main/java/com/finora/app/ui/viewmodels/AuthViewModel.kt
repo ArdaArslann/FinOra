@@ -6,6 +6,7 @@ import com.finora.app.data.local.TokenManager
 import com.finora.app.data.network.AuthApi
 import com.finora.app.data.network.LoginRequest
 import com.finora.app.data.network.RegisterRequest
+import com.finora.app.data.network.getErrorMessage
 import com.finora.app.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,10 +34,10 @@ class AuthViewModel @Inject constructor(
                 val response = authApi.login(request)
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     val data = response.body()!!.data!!
-                    tokenManager.saveTokens(data.token, data.refreshToken)
+                    tokenManager.saveTokens(data.accessToken, data.refreshToken)
                     _loginState.value = Resource.Success(Unit)
                 } else {
-                    _loginState.value = Resource.Error(response.body()?.error?.message ?: response.message() ?: "Login failed")
+                    _loginState.value = Resource.Error(response.getErrorMessage() ?: response.message() ?: "Login failed")
                 }
             } catch (e: Exception) {
                 _loginState.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -52,7 +53,7 @@ class AuthViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true) {
                     _registerState.value = Resource.Success(Unit)
                 } else {
-                    _registerState.value = Resource.Error(response.body()?.error?.message ?: response.message() ?: "Registration failed")
+                    _registerState.value = Resource.Error(response.getErrorMessage() ?: response.message() ?: "Registration failed")
                 }
             } catch (e: Exception) {
                 _registerState.value = Resource.Error(e.localizedMessage ?: "Connection error")

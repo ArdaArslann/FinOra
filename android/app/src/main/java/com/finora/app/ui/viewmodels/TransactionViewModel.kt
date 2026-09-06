@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.finora.app.data.network.CreateTransactionRequest
 import com.finora.app.data.network.TransactionApi
 import com.finora.app.data.network.TransactionDto
+import com.finora.app.data.network.getErrorMessage
 import com.finora.app.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class TransactionViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     _transactions.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _transactions.value = Resource.Error(response.body()?.error?.message ?: "Failed to fetch transactions")
+                    _transactions.value = Resource.Error(response.getErrorMessage() ?: "Failed to fetch transactions")
                 }
             } catch (e: Exception) {
                 _transactions.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -60,6 +61,19 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = transactionApi.createTransaction(request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    fetchTransactions() // Refresh list
+                }
+            } catch (e: Exception) {
+                // Error handling
+            }
+        }
+    }
+
+    fun updateTransaction(id: String, request: CreateTransactionRequest) {
+        viewModelScope.launch {
+            try {
+                val response = transactionApi.updateTransaction(id, request)
                 if (response.isSuccessful && response.body()?.success == true) {
                     fetchTransactions() // Refresh list
                 }

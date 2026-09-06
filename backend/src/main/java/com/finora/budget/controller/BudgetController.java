@@ -6,10 +6,11 @@ import com.finora.budget.dto.UpdateBudgetRequest;
 import com.finora.budget.service.BudgetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import com.finora.common.dto.ApiResponse;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/budgets")
@@ -19,37 +20,38 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @PostMapping
-    public BudgetResponse create(
+    public ResponseEntity<ApiResponse<BudgetResponse>> create(
             @Valid @RequestBody CreateBudgetRequest request
     ) {
-        return budgetService.create(request);
+        BudgetResponse response = budgetService.create(request);
+        return ResponseEntity.status(201).body(ApiResponse.success(response));
     }
 
     @GetMapping
-    public List<BudgetResponse> getAll() {
-        return budgetService.getAll();
+    public ResponseEntity<ApiResponse<List<BudgetResponse>>> getAll() {
+        return ResponseEntity.ok(ApiResponse.success(budgetService.getAll()));
     }
 
     @GetMapping("/{id}")
-    public BudgetResponse getById(
+    public ResponseEntity<ApiResponse<BudgetResponse>> getById(
             @PathVariable UUID id
     ) {
-        return budgetService.getById(id);
+        return ResponseEntity.ok(ApiResponse.success(budgetService.getById(id)));
     }
 
     @PutMapping("/{id}")
-    public BudgetResponse update(
+    public ResponseEntity<ApiResponse<BudgetResponse>> update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateBudgetRequest request
     ) {
-        return budgetService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success(budgetService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
+    public ResponseEntity<Void> delete(
             @PathVariable UUID id
     ) {
         budgetService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

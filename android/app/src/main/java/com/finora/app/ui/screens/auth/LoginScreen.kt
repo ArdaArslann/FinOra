@@ -19,30 +19,41 @@ import com.finora.app.ui.theme.PrimaryNeon
 import com.finora.app.ui.theme.SpaceDark
 import com.finora.app.ui.theme.SurfaceDark
 import com.finora.app.ui.viewmodels.AuthViewModel
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     val loginState by viewModel.loginState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(loginState) {
         if (loginState is Resource.Success && loginState.data != null && email.isNotBlank()) {
             onLoginSuccess()
+        } else if (loginState is Resource.Error) {
+            snackbarHostState.showSnackbar(loginState.message ?: "An error occurred")
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpaceDark),
-        contentAlignment = Alignment.Center
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = SpaceDark
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,15 +108,6 @@ fun LoginScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (loginState is Resource.Error) {
-                Text(
-                    text = loginState.message ?: "An error occurred",
-                    color = Color.Red,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            
             if (loginState is Resource.Loading) {
                 CircularProgressIndicator(color = PrimaryNeon)
             } else {
@@ -116,6 +118,17 @@ fun LoginScreen(
                     }
                 )
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            TextButton(onClick = onNavigateToRegister) {
+                Text(
+                    text = "Don't have an account? Sign Up",
+                    color = PrimaryNeon,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
+}
 }

@@ -19,11 +19,15 @@ import com.finora.app.ui.viewmodels.AuthViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.finora.app.data.network.RegisterRequest
 import com.finora.app.domain.model.Resource
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     var firstName by remember { mutableStateOf("") }
@@ -32,19 +36,26 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
 
     val registerState by viewModel.registerState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(registerState) {
         if (registerState is Resource.Success && registerState.data != null) {
             onRegisterSuccess()
+        } else if (registerState is Resource.Error) {
+            snackbarHostState.showSnackbar(registerState.message ?: "An error occurred")
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpaceDark),
-        contentAlignment = Alignment.Center
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = SpaceDark
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,15 +120,6 @@ fun RegisterScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (registerState is Resource.Error) {
-                Text(
-                    text = registerState.message ?: "An error occurred",
-                    color = Color.Red,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
             if (registerState is Resource.Loading) {
                 CircularProgressIndicator(color = PrimaryNeon)
             } else {
@@ -128,6 +130,17 @@ fun RegisterScreen(
                     }
                 )
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            TextButton(onClick = onNavigateToLogin) {
+                Text(
+                    text = "Already have an account? Log In",
+                    color = PrimaryNeon,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
+}
 }

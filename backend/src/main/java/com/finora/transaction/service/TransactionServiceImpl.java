@@ -13,6 +13,7 @@ import com.finora.transaction.entity.TransactionEntity;
 import com.finora.transaction.mapper.TransactionMapper;
 import com.finora.transaction.repository.TransactionRepository;
 import com.finora.user.entity.UserEntity;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,13 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final CurrentUserService currentUserService;
     private final ReceiptRepository receiptRepository;
+    private final StringRedisTemplate redisTemplate;
+    
+    private void evictInsightCache(UUID userId) {
+        try {
+            redisTemplate.delete("finora:ai-insight:cache:" + userId);
+        } catch (Exception e) {}
+    }
 
     @Override
     public TransactionResponse createTransaction(
@@ -75,6 +83,8 @@ public class TransactionServiceImpl implements TransactionService {
 
             receiptRepository.save(receipt);
         }
+        
+        evictInsightCache(currentUser.getId());
 
         return transactionMapper.toResponse(transaction);
     }
@@ -127,6 +137,8 @@ public class TransactionServiceImpl implements TransactionService {
         );
 
         transaction = transactionRepository.save(transaction);
+        
+        evictInsightCache(currentUser.getId());
 
         return transactionMapper.toResponse(transaction);
     }
@@ -148,6 +160,8 @@ public class TransactionServiceImpl implements TransactionService {
         receiptRepository.saveAll(receipts);
 
         transactionRepository.delete(transaction);
+        
+        evictInsightCache(currentUser.getId());
     }
 
     private TransactionEntity getTransactionOrThrow(

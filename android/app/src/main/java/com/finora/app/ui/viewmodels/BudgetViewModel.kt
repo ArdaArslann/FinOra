@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.finora.app.data.network.BudgetApi
 import com.finora.app.data.network.BudgetDto
 import com.finora.app.data.network.CreateBudgetRequest
+import com.finora.app.data.network.getErrorMessage
 import com.finora.app.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,7 @@ class BudgetViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     _budgets.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _budgets.value = Resource.Error(response.body()?.error?.message ?: "Failed to load budgets")
+                    _budgets.value = Resource.Error(response.getErrorMessage() ?: "Failed to fetch budgets")
                 }
             } catch (e: Exception) {
                 _budgets.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -53,10 +54,37 @@ class BudgetViewModel @Inject constructor(
                     _createState.value = Resource.Success(Unit)
                     fetchBudgets() // refresh list
                 } else {
-                    _createState.value = Resource.Error(response.body()?.error?.message ?: "Failed to create budget")
+                    _createState.value = Resource.Error(response.getErrorMessage() ?: "Failed to create budget")
                 }
             } catch (e: Exception) {
                 _createState.value = Resource.Error(e.localizedMessage ?: "Connection error")
+            }
+        }
+    }
+
+    fun updateBudget(id: String, request: com.finora.app.data.network.UpdateBudgetRequest) {
+        viewModelScope.launch {
+            try {
+                val response = budgetApi.updateBudget(id, request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    fetchBudgets() // Refresh list
+                }
+            } catch (e: Exception) {
+                // Error handling
+            }
+        }
+    }
+
+    fun deleteBudget(id: String) {
+        viewModelScope.launch {
+            try {
+                val response = budgetApi.deleteBudget(id)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val currentList = _budgets.value.data?.filter { it.id != id }
+                    _budgets.value = Resource.Success(currentList ?: emptyList())
+                }
+            } catch (e: Exception) {
+                // Handle error
             }
         }
     }

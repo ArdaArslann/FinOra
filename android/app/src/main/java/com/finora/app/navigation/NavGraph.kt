@@ -15,14 +15,19 @@ import com.finora.app.ui.screens.budget.BudgetScreen
 import com.finora.app.ui.screens.statistics.StatisticsScreen
 
 @Composable
-fun FinOraNavGraph(navController: NavHostController) {
+fun FinOraNavGraph(
+    navController: NavHostController, 
+    startDestination: String = Screen.Onboarding.route,
+    onOnboardingCompleted: () -> Unit = {}
+) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Onboarding.route
+        startDestination = startDestination
     ) {
         composable(Screen.Onboarding.route) {
             OnboardingScreen(
                 onGetStartedClick = {
+                    onOnboardingCompleted()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
@@ -36,6 +41,9 @@ fun FinOraNavGraph(navController: NavHostController) {
                     navController.navigate(Screen.Main.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
                 }
             )
         }
@@ -46,12 +54,21 @@ fun FinOraNavGraph(navController: NavHostController) {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Register.route) { inclusive = true }
                     }
+                },
+                onNavigateToLogin = {
+                    navController.popBackStack()
                 }
             )
         }
 
         composable(Screen.Main.route) {
-            com.finora.app.ui.screens.MainScreen()
+            com.finora.app.ui.screens.MainScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
