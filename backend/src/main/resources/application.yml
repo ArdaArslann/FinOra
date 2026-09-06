@@ -10,7 +10,7 @@ spring:
   datasource:
     url: jdbc:postgresql://postgres:5432/finora
     username: finora
-    password: change-me
+    password: ${DB_PASSWORD}
 
   flyway:
     enabled: true
@@ -27,7 +27,7 @@ spring:
       port: 6379
 
 jwt:
-  secret: "change-me"
+  secret: ${JWT_SECRET}
   expiration: 3600000
 
 management:

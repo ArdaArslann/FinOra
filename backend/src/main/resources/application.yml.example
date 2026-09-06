@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: backend
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/finora
+    username: finora
+    password: ${DB_PASSWORD}           # Set DB_PASSWORD in your .env or environment
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+jwt:
+  secret: ${JWT_SECRET}                # Set JWT_SECRET in your .env or environment
+  expiration: 3600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+server:
+  port: 8080
+
+openai:
+  api-key: ${OPENAI_API_KEY}           # Set OPENAI_API_KEY in your .env or environment
+  model: gpt-5
+
+gemini:
+  api-key: ${GEMINI_API_KEY}           # Set GEMINI_API_KEY in your .env or environment
+  model: gemini-3.5-flash-lite
