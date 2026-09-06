@@ -10,7 +10,7 @@ spring:
   datasource:
     url: jdbc:postgresql://postgres:5432/finora
     username: finora
-    password: ${DB_PASSWORD}
+    password: ${DB_PASSWORD}           # Set DB_PASSWORD in your .env or environment
 
   flyway:
     enabled: true
@@ -27,7 +27,7 @@ spring:
       port: 6379
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET}                # Set JWT_SECRET in your .env or environment
   expiration: 3600000
 
 management:
@@ -40,9 +40,9 @@ server:
   port: 8080
 
 openai:
-  api-key: ${OPENAI_API_KEY}
+  api-key: ${OPENAI_API_KEY}           # Set OPENAI_API_KEY in your .env or environment
   model: gpt-5
 
 gemini:
-  api-key: ${GEMINI_API_KEY}
+  api-key: ${GEMINI_API_KEY}           # Set GEMINI_API_KEY in your .env or environment
   model: gemini-3.5-flash-lite
