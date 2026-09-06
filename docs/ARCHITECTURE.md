@@ -2,39 +2,60 @@
 
 ## Overview
 
-FinOra follows a layered architecture based on Clean Architecture and DDD Lite. The domain is organized around core business entities, application services, infrastructure components, and their relationships.
+FinOra is a full-stack personal finance application consisting of:
 
-The backend is built with:
+- A **Java 21 / Spring Boot** REST API backend
+- A **Kotlin / Jetpack Compose** native Android client
 
-- Java 21
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- PostgreSQL
-- Redis
-- Flyway
-- Docker
+The backend follows a layered architecture based on Clean Architecture and DDD Lite. The Android client follows MVVM with a clear separation between presentation, data, and core layers.
 
-The Android client is built with:
+---
 
-- Kotlin
-- Jetpack Compose
-- MVVM
-- Hilt
-- Retrofit + OkHttp
-- DataStore
+## Backend
 
-The main application domains are:
+### Tech Stack
 
-- Authentication (access + refresh tokens)
-- Users
-- Categories
-- Transactions
-- Budgets
-- Receipts
-- Dashboard
-- AI Financial Insights
-- Statistics & Reporting
+| Component | Technology |
+|---|---|
+| Language | Java 21 |
+| Framework | Spring Boot |
+| Security | Spring Security + JWT (access + refresh) |
+| Database | PostgreSQL 17 |
+| ORM | Spring Data JPA / Hibernate |
+| Migrations | Flyway |
+| Cache | Redis 8 |
+| Containerization | Docker + Docker Compose |
+| Documentation | Swagger / OpenAPI |
+
+### Domain Modules
+
+| Package | Responsibility |
+|---|---|
+| `auth` | Registration, login, JWT generation, refresh tokens |
+| `user` | User profile management |
+| `category` | User-specific transaction categories |
+| `transaction` | Financial transactions (income / expense) |
+| `budget` | Category budgets with usage tracking |
+| `dashboard` | Aggregated financial overview |
+| `statistics` | Date-range financial reports |
+| `receipt` | Receipt upload, AI extraction, confirmation |
+| `dashboard.ai` | AI financial insight generation |
+| `common` | Shared DTOs, exceptions, security, base entity |
+
+### Layered Architecture (per module)
+
+```
+Controller  →  Service  →  Repository  →  Entity
+                 ↑
+              DTO / Mapper
+```
+
+- **Controllers**: Handle HTTP requests, delegate to services, return DTOs.
+- **Services**: Business logic, enforcing user ownership.
+- **Repositories**: Spring Data JPA interfaces.
+- **Entities**: JPA-mapped persistence models.
+- **DTOs**: Request/Response objects decoupled from entities.
+- **Mappers**: Entity ↔ DTO conversions.
 
 ---
 
@@ -42,231 +63,173 @@ The main application domains are:
 
 ### User
 
-Represents an application user and the owner of the user's financial data.
+Represents an application user and the owner of all financial data.
 
-#### Relationships
+**Relationships:**
+- One User → many Categories
+- One User → many Transactions
+- One User → many Budgets
+- One User → many Receipts
+- One User → many RefreshTokens
 
-- One User has many Categories.
-- One User has many Transactions.
-- One User has many Budgets.
-- One User has many Receipts.
-- One User has many RefreshTokens.
-
-#### Fields
-
-- id
-- firstName
-- lastName
-- email
-- password
-- createdAt
-- updatedAt
+**Fields:** `id`, `firstName`, `lastName`, `email`, `password`, `createdAt`, `updatedAt`
 
 ---
 
 ### RefreshToken
 
-Represents a server-side stored refresh token tied to a user session.
+Server-stored refresh token for session renewal.
 
-#### Relationships
+**Relationships:** Belongs to one User.
 
-- Belongs to one User.
-
-#### Fields
-
-- id
-- token
-- user
-- expiresAt
-- createdAt
+**Fields:** `id`, `token`, `user`, `expiresAt`, `createdAt`
 
 ---
 
 ### Category
 
-Represents how transactions and budgets are classified.
+Classifies transactions and budgets.
 
-#### Examples
+**Relationships:**
+- Belongs to one User
+- Has many Transactions
+- Has many Budgets
 
-- Food
-- Transport
-- Shopping
-- Bills
-- Entertainment
-- Health
-- Other
+**Fields:** `id`, `name`, `icon`, `color`, `createdAt`, `updatedAt`
 
-#### Relationships
-
-- Belongs to one User.
-- Has many Transactions.
-- Has many Budgets.
-
-#### Fields
-
-- id
-- name
-- icon
-- color
-- createdAt
-- updatedAt
-
-Categories are user-specific. A transaction or budget can only reference a category belonging to the current user.
-
-Default categories are automatically seeded when a new user registers.
+Default categories are automatically created for every new user on registration:
+`Food`, `Transport`, `Shopping`, `Bills`, `Entertainment`, `Health`, `Other`
 
 ---
 
 ### Transaction
 
-Represents a financial movement.
+Represents a financial movement (income or expense).
 
-#### Relationships
+**Relationships:**
+- Belongs to one User
+- Belongs to one Category
+- Optionally associated with one Receipt
 
-- Belongs to one User.
-- Belongs to one Category.
-- May be associated with one Receipt.
+**Fields:** `id`, `amount`, `type`, `description`, `transactionDate`, `category`, `user`, `createdAt`, `updatedAt`
 
-#### Fields
-
-- id
-- amount
-- type
-- description
-- transactionDate
-- category
-- user
-- createdAt
-- updatedAt
-
-#### Transaction Types
-
-- Income
-- Expense
-
-Transactions are the primary source for calculating financial statistics such as income, expenses, balance, and category spending.
+**Types:** `INCOME`, `EXPENSE`
 
 ---
 
 ### Budget
 
-Represents a spending limit for a category during a specific period.
+Spending limit for a category within a time period.
 
-#### Relationships
+**Relationships:**
+- Belongs to one User
+- Belongs to one Category
 
-- Belongs to one User.
-- Belongs to one Category.
+**Fields:** `id`, `amount`, `period`, `startDate`, `endDate`, `category`, `user`, `createdAt`, `updatedAt`
 
-#### Fields
+**Periods:** `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY`
 
-- id
-- amount
-- period
-- startDate
-- endDate
-- category
-- user
-- createdAt
-- updatedAt
-
-#### Budget Periods
-
-Supported budget periods include:
-
-- Daily
-- Weekly
-- Monthly
-- Yearly
-
-Budget spending is calculated from transactions belonging to the same user and category within the budget's active period.
+Budget spending is dynamically calculated from matching transactions.
 
 ---
 
 ### Receipt
 
-Represents an uploaded receipt that can be processed and optionally linked to a transaction.
+Uploaded receipt image associated with a user.
 
-#### Relationships
+**Relationships:**
+- Belongs to one User
+- Optionally linked to one Transaction
+- Has one ReceiptExtraction
 
-- Belongs to one User.
-- May be linked to one Transaction.
-- Has one Receipt Extraction.
+**Fields:** `id`, `originalFileName`, `storageKey`, `contentType`, `fileSize`, `status`, `user`, `transaction`, `uploadedAt`
 
-#### Fields
-
-- id
-- originalFileName
-- storageKey
-- contentType
-- fileSize
-- status
-- user
-- transaction
-- uploadedAt
-
-#### Receipt Status
-
-- UPLOADED
-- PROCESSING
-- PROCESSED
-- FAILED
-
-A receipt is not automatically converted into a transaction.
-
-After the receipt is processed, the user can review and confirm the extracted information. Confirmation creates an expense transaction and links the receipt to that transaction.
-
-A receipt can only be confirmed once.
+**Status lifecycle:** `UPLOADED → PROCESSING → PROCESSED | FAILED`
 
 ---
 
-### Receipt Extraction
+### ReceiptExtraction
 
-Represents structured information extracted from a receipt image.
+Structured financial data extracted from a receipt by AI.
 
-#### Relationships
+**Relationships:** Belongs to one Receipt.
 
-- Belongs to one Receipt.
+**Fields:** `receipt`, `merchantName`, `totalAmount`, `transactionDate`, `currency`, `suggestedCategory`
 
-#### Fields
+---
 
-- receipt
-- merchantName
-- totalAmount
-- transactionDate
-- currency
-- suggestedCategory
+## Database Migrations (Flyway)
 
-Receipt extraction is performed using Gemini Vision.
+| Migration | Description |
+|---|---|
+| V1 | Initial schema — users table |
+| V2 | Refresh tokens table |
+| V3 | Categories table |
+| V4 | Transactions table |
+| V5 | Budgets table |
+| V7 | Receipts table |
+| V8 | Transaction FK on receipts |
+| V9 | Receipt extractions table |
 
-The model analyzes the receipt image directly and returns structured JSON containing:
+---
 
-- Merchant name
-- Total amount
-- Transaction date
-- Currency
-- Suggested category
+## Authentication Flow
 
-The suggested category is only a recommendation. The final transaction category is selected or confirmed by the user.
+FinOra uses a dual-token scheme:
+
+| Token | Lifetime | Storage |
+|---|---|---|
+| Access Token (JWT) | 1 hour | Client memory / DataStore |
+| Refresh Token | Long-lived | Server DB + Client DataStore |
+
+### Login Flow
+
+```
+POST /auth/login
+ → Access Token (JWT) + Refresh Token returned
+ → Android stores both in DataStore via TokenManager
+```
+
+### Request Flow
+
+```
+API Request
+ → AuthInterceptor attaches "Authorization: Bearer <access_token>"
+ → Backend validates JWT
+```
+
+### Refresh Flow (Android — OkHttp TokenAuthenticator)
+
+```
+Request → 401 Unauthorized
+ |
+ v
+TokenAuthenticator triggered
+ |
+ v
+POST /auth/refresh { refreshToken }
+ |
+ +── Success → new access token saved → original request retried
+ |
+ +── Failure → tokens cleared → navigate to Login
+```
 
 ---
 
 ## Receipt Processing Flow
 
 ```
-User
+Android (image picker)
  |
- | Upload Receipt (multipart)
+ | POST /receipts (multipart)
  v
-ReceiptController
- |
- v
-ReceiptService
+ReceiptController → ReceiptService
  |
  v
-StorageService (LocalStorageService)
+LocalStorageService (file saved to disk)
  |
  v
-ReceiptEntity (status: UPLOADED → PROCESSING)
+ReceiptEntity saved (status: UPLOADED)
  |
  v
 ReceiptExtractionService
@@ -275,120 +238,43 @@ ReceiptExtractionService
 GeminiVisionReceiptExtractor
  |
  v
-ReceiptExtractionEntity
+ReceiptExtractionEntity saved
  |
  v
 ReceiptEntity (status: PROCESSED)
  |
- | User reviews & confirms
+ | User reviews extraction on Android → confirms
  v
-TransactionService
+POST /receipts/{id}/confirm
  |
  v
-TransactionEntity (EXPENSE)
+TransactionService → EXPENSE Transaction created
  |
  v
 Receipt linked to Transaction
 ```
 
-The current receipt extraction flow uses Gemini Vision directly.
+**Confirmation request fields:** `amount`, `description`, `transactionDate`, `categoryId`
 
-Earlier OCR/Tesseract/OpenCV components were explored during development, but Gemini Vision is the active receipt extraction implementation. An OpenAIReceiptExtractor also exists as an alternative provider.
-
----
-
-## Receipt Confirmation
-
-Receipt extraction and transaction creation are intentionally separated.
-
-The extraction process identifies probable financial information from the receipt:
-
-- Merchant name
-- Total amount
-- Transaction date
-- Currency
-- Suggested category
-
-The user must confirm the extracted information before a transaction is created.
-
-### Confirmation Endpoint
-
-`POST /receipts/{id}/confirm`
-
-The confirmation request contains:
-
-- amount
-- description
-- transactionDate
-- categoryId
-
-After confirmation:
-
-1. A new EXPENSE transaction is created.
-2. The selected category is assigned to the transaction.
-3. The receipt is linked to the created transaction.
-4. The receipt remains in PROCESSED status.
-
-A receipt cannot be confirmed more than once.
-
-If a receipt is already linked to a transaction, the API returns a `RECEIPT_ALREADY_CONFIRMED` business error.
+A receipt can only be confirmed once. Attempting to re-confirm returns `RECEIPT_ALREADY_CONFIRMED`.
 
 ---
 
-## Dashboard
-
-The Dashboard provides dynamically calculated financial information based on the user's transactions and budgets.
-
-### Financial Statistics
-
-The dashboard supports:
-
-- Overall income
-- Overall expense
-- Overall balance
-- Current-month income
-- Current-month expense
-- Current-month balance
-- Current-month category spending
-- Budget spending
-- Budget remaining amount
-- Budget usage percentage
-- Recent transactions
-
-Dashboard statistics are calculated dynamically from the user's stored financial data rather than being stored as duplicated aggregate values.
-
----
-
-## Statistics & Reporting
-
-The Statistics module provides date-range financial analysis:
-
-- Total income and expenses for the period
-- Net balance
-- Daily statistics (amount per day)
-- Monthly statistics (amount per month)
-- Category breakdown (income/expense per category)
-- Budget performance (spent vs. budget, usage percentage, over-budget flag)
-
----
-
-## AI Financial Insights
-
-FinOra includes an AI-powered financial insight system.
-
-### Financial Insight Flow
+## AI Financial Insights Flow
 
 ```
-Dashboard API
+GET /dashboard/insights
  |
  v
 FinancialInsightService
  |
  v
-FinancialInsightRateLimiter (Redis — 60s per user)
+FinancialInsightRateLimiter
+(Redis key: finora:rate-limit:financial-insight:{userId} — 60s TTL)
  |
  v
 FinancialInsightContextBuilder
+(builds income, expenses, balance, budgets, category spending)
  |
  v
 FinancialInsightPromptBuilder
@@ -396,175 +282,109 @@ FinancialInsightPromptBuilder
  v
 FinancialInsightGenerator (abstraction)
  |
- +----> GeminiFinancialInsightGenerator
- |
- +----> OpenAIFinancialInsightGenerator
+ +──> GeminiFinancialInsightGenerator
+ +──> OpenAIFinancialInsightGenerator
  |
  v
 FinancialInsightResponse
-```
-
-### Financial Insight Context
-
-The AI receives structured financial context containing:
-
-- Overall income
-- Overall expense
-- Overall balance
-- Current-month income
-- Current-month expense
-- Current-month balance
-- Current-month category spending
-- Existing budgets
-- Budget amount
-- Budget spending
-- Budget remaining amount
-- Budget usage percentage
-
-The AI is instructed to use only the provided financial data and must not invent financial information.
-
-### AI Financial Insight Rules
-
-- Existing budgets are treated as already defined.
-- The AI must not recommend creating a budget for a category that already has a budget.
-- The AI must not claim that a budget is missing when one exists.
-- Budget spending must come from the calculated budget context.
-- Budget spending must not be inferred from unrelated category spending.
-- Budgets below 80% usage are not treated as a budget problem.
-- Budgets above 80% usage may be reported as a risk.
-- Budgets above 100% usage are reported as exceeded.
-- Recommendations must be based only on the supplied financial data.
-
-### AI Financial Insight Response
-
-```json
 {
-  "summary": "short overall financial summary",
-  "monthlyStatus": {
-    "income": 30000,
-    "expenses": 2500,
-    "balance": 27500
-  },
-  "budgetInsights": [
-    {
-      "category": "Food",
-      "spent": 2000,
-      "budget": 2500,
-      "remaining": 500,
-      "usagePercentage": 80
-    }
-  ],
-  "recommendations": [
-    "Monitor your Food budget closely."
-  ]
+  "summary": "...",
+  "monthlyStatus": { income, expenses, balance },
+  "budgetInsights": [ { category, spent, budget, remaining, usagePercentage } ],
+  "recommendations": [ "..." ]
 }
 ```
 
-### AI Provider Abstraction
-
-AI financial insight generation is implemented behind the `FinancialInsightGenerator` abstraction.
-
-This allows the application to support different AI providers without changing the financial insight business logic.
-
-Currently supported implementations:
-
-- `GeminiFinancialInsightGenerator`
-- `OpenAIFinancialInsightGenerator`
-
-The service layer is independent from the specific AI provider.
+**AI Rules:**
+- Uses only the supplied financial context — never invents data.
+- Does not recommend creating a budget when one already exists.
+- Budgets >80% usage → flagged as risk. >100% → flagged as exceeded.
 
 ---
 
-## Authentication
+## Dashboard
 
-FinOra uses a dual-token authentication scheme.
+Dynamically calculated from user's stored transactions and budgets:
 
-### Access Token
+- Overall income / expenses / balance
+- Current-month income / expenses / balance
+- Current-month category spending breakdown
+- Budget usage (amount, spent, remaining, usage %)
+- Recent transactions
 
-- Short-lived JWT (1 hour)
-- Sent in the `Authorization: Bearer <token>` header on every protected request
+No pre-computed aggregate values are stored.
 
-### Refresh Token
+---
 
-- Longer-lived opaque token stored server-side in the `refresh_tokens` table
-- Used to obtain a new access token when the current one expires
-- Endpoint: `POST /auth/refresh`
+## Statistics & Reporting
 
-### Token Refresh Flow (Android)
+Date-range report (`startDate`, `endDate`):
 
-```
-Request fails with 401
- |
- v
-OkHttp TokenAuthenticator triggered
- |
- v
-POST /auth/refresh (with stored refresh token)
- |
- +----> Success → new access token stored → original request retried
- |
- +----> Failure → tokens cleared → user redirected to Login
-```
-
-The refresh is attempted once per failed request. If the refresh fails, the user session is terminated.
+- Total income and expenses for the period
+- Net balance
+- Daily breakdown (income/expense per day)
+- Monthly breakdown (income/expense per month)
+- Category breakdown (income/expense per category)
+- Budget performance per category (spent vs. budget, usage %, over-budget flag)
 
 ---
 
 ## Android Client Architecture
 
-The Android application acts as a client of the FinOra REST API. It handles presentation, UI state, networking, session management, and local caching, while the backend remains the source of truth.
+### Layer Overview
 
-### Layers
-
-- **Presentation**: Jetpack Compose screens, ViewModels, UI state, and navigation. ViewModels communicate with the API layer directly; they never expose raw Retrofit responses to the UI.
-- **Data**: Retrofit API interfaces, DTOs (matching the exact JSON contract), network utilities, and TokenManager.
-- **Core**: Hilt dependency injection, OkHttp (with `AuthInterceptor` and `TokenAuthenticator`), and centralized `ApiResponse` / `NetworkUtils` error handling.
+| Layer | Responsibility |
+|---|---|
+| **Presentation** | Jetpack Compose screens, ViewModels, UI state, navigation |
+| **Data** | Retrofit API interfaces, DTOs, `TokenManager`, `NetworkUtils` |
+| **Core** | Hilt `NetworkModule`, `AuthInterceptor`, `TokenAuthenticator`, `ApiResponse<T>` |
 
 ### Navigation
 
-Navigation is managed via a `NavGraph` with two root destinations:
+Two root graphs managed by `NavGraph`:
 
-- **Auth graph** (`onboarding`, `login`, `register`) — shown when no valid session exists
-- **Main graph** (`MainScreen`) — shown when a valid session exists; hosts bottom navigation (Dashboard, Transactions, Budgets, Categories, Statistics, Receipts, Profile) with a central FAB
+- **Auth graph** (`onboarding` → `login` → `register`) — shown when no valid session exists
+- **Main graph** (`MainScreen`) — shown when a valid session exists
 
-On app launch, `MainActivity` checks the stored token via `TokenManager` to determine the initial destination.
+`MainActivity` reads the stored token from `TokenManager` to determine the initial destination at launch.
+
+`MainScreen` hosts a bottom navigation bar + central FAB `Scaffold`:
+
+| Screen | Route |
+|---|---|
+| Dashboard | `dashboard` |
+| Transactions | `transactions` |
+| Budgets | `budgets` |
+| Categories | `categories` |
+| Statistics | `statistics` |
+| Receipts | `receipts` |
+| Profile | `profile` |
 
 ### API Interfaces
 
-| Interface          | Domain          |
-|--------------------|-----------------|
-| `AuthApi`          | Authentication  |
-| `CategoryApi`      | Categories      |
-| `TransactionApi`   | Transactions    |
-| `BudgetApi`        | Budgets         |
-| `DashboardApi`     | Dashboard       |
-| `StatisticsApi`    | Statistics      |
-| `ReceiptApi`       | Receipts        |
-| `UserApi`          | User profile    |
+| Interface | Domain |
+|---|---|
+| `AuthApi` | Register, Login, Refresh, Logout |
+| `CategoryApi` | Category CRUD |
+| `TransactionApi` | Transaction CRUD |
+| `BudgetApi` | Budget CRUD |
+| `DashboardApi` | Dashboard summary + AI insights |
+| `StatisticsApi` | Date-range statistics |
+| `ReceiptApi` | Upload, list, confirm receipts |
+| `UserApi` | User profile |
 
-### API Contract & Networking
+### Networking
 
-- **Contract**: Swagger/OpenAPI is the authoritative contract for endpoints and JSON fields.
-- **Networking**: Retrofit and OkHttp are configured via a single Hilt `NetworkModule`.
-- **Authentication**: `AuthInterceptor` attaches the access token to protected calls. `TokenAuthenticator` handles automatic refresh on 401.
-- **Error handling**: `ApiResponse<T>` and `NetworkUtils` provide consistent Loading / Success / Error state across all ViewModels.
+All API interfaces are instantiated via a single Hilt `NetworkModule`:
 
-### Security & Environment
+- `AuthInterceptor` — attaches `Authorization: Bearer <token>` to every protected request
+- `TokenAuthenticator` — handles 401 by attempting one token refresh before clearing session
+- `ApiResponse<T>` — wraps all responses in `Success / Error / Loading`
+- `NetworkUtils` — extracts backend error codes/messages for user-facing display
 
-- No hardcoded production secrets.
-- JWTs, refresh tokens, and sensitive data are never logged.
-- Tokens are cleared on logout and on failed refresh.
-- Base URL is configurable (`10.0.2.2:8080` for emulator, real IP for physical device).
+### Security
 
-### Database Migrations (Flyway)
-
-| Migration | Description                        |
-|-----------|------------------------------------|
-| V1        | Initial schema (users)             |
-| V2        | Refresh tokens table               |
-| V3        | Categories table                   |
-| V4        | Transactions table                 |
-| V5        | Budgets table                      |
-| V7        | Receipts table                     |
-| V8        | Transaction FK on receipts         |
-| V9        | Receipt extractions table          |
+- No hardcoded secrets anywhere in the codebase
+- JWT and refresh tokens are stored only in DataStore
+- Tokens are cleared on logout and on failed token refresh
+- Sensitive data (tokens, passwords) are never logged
