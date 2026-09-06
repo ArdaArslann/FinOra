@@ -50,12 +50,12 @@ The project is a portfolio-quality, full-stack mobile application following mode
 - Default Category Seeding on Registration
 - Category Management (CRUD)
 - Transaction Management (CRUD)
-- Budget Management (CRUD + usage tracking)
+- Budget Management (CRUD + real-time transaction aggregation tracking)
 - Dashboard (income, expenses, balance, category spending, budget overview, recent transactions)
-- Statistics & Reporting (date-range, daily/monthly trends, category breakdown, budget performance)
+- Statistics & Reporting (All-Time, date-range, daily/monthly trends, category breakdown, budget performance)
 - Receipt Upload (JPG, JPEG, PNG, PDF — max 5 MB)
 - Gemini Vision Receipt Processing
-- Receipt Extraction & Persistence
+- Receipt Extraction (Amount, Date, Merchant) & Persistence
 - Receipt Confirmation → Transaction Creation
 - AI Financial Insights (Gemini + OpenAI with provider abstraction)
 - Redis-backed AI Rate Limiting (per-user, 60s TTL)
@@ -74,12 +74,12 @@ The project is a portfolio-quality, full-stack mobile application following mode
 - Dynamic auth-state navigation
 - Dashboard screen (live API)
 - Transactions screen
-- Budget screen
+- Budget screen (Real-time dynamic spending calculation integration)
 - Category screen
-- Statistics screen (custom Canvas charts — daily / monthly / category)
+- Statistics screen (custom Canvas charts — All-time / yearly / monthly / weekly / category breakdowns / tooltips)
 - Receipt screen (Android image picker + multipart upload)
 - Profile screen
-- MainScreen Scaffold with bottom navigation + central FAB
+- MainScreen Scaffold with bottom navigation + central Camera FAB
 - Hilt dependency injection
 - Retrofit + OkHttp networking with centralized error handling
 
