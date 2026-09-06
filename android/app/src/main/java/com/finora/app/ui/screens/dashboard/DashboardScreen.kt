@@ -24,9 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.finora.app.domain.model.Resource
 import com.finora.app.ui.components.GlassCard
 import com.finora.app.ui.theme.PrimaryNeon
-import com.finora.app.ui.theme.SecondaryNeon
+import com.finora.app.ui.theme.ErrorRed
 import com.finora.app.ui.theme.SpaceDark
-import com.finora.app.ui.theme.SuccessGreen
 import com.finora.app.ui.viewmodels.DashboardViewModel
 
 @Composable
@@ -92,8 +91,6 @@ fun DashboardScreen(
                         Text("Total Balance", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("₺${data.currentBalance}", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("${if (data.incomePercentageChange > 0) "+" else ""}${data.incomePercentageChange}% this month", color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -120,7 +117,7 @@ fun DashboardScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Expenses", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("₺${data.totalExpense}", color = SecondaryNeon, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("₺${data.totalExpense}", color = ErrorRed, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -141,7 +138,7 @@ fun DashboardScreen(
 
         if (insightState is Resource.Loading) {
             Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = SecondaryNeon)
+                CircularProgressIndicator(color = PrimaryNeon)
             }
         } else if (insightState is Resource.Success) {
             GlassCard(

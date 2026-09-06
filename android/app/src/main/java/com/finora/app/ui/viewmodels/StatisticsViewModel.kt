@@ -11,7 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
+
+enum class StatsPeriod { WEEKLY, MONTHLY, YEARLY, ALL_TIME }
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
@@ -21,17 +26,48 @@ class StatisticsViewModel @Inject constructor(
     private val _statisticsState = MutableStateFlow<Resource<StatisticsResponse>>(Resource.Loading())
     val statisticsState: StateFlow<Resource<StatisticsResponse>> = _statisticsState.asStateFlow()
 
+    private val _selectedPeriod = MutableStateFlow(StatsPeriod.MONTHLY)
+    val selectedPeriod: StateFlow<StatsPeriod> = _selectedPeriod.asStateFlow()
+
     init {
-        fetchStatistics()
+        fetchStatistics(StatsPeriod.MONTHLY)
     }
 
-    fun fetchStatistics() {
+    fun selectPeriod(period: StatsPeriod) {
+        _selectedPeriod.value = period
+        fetchStatistics(period)
+    }
+
+    fun fetchStatistics(period: StatsPeriod = _selectedPeriod.value) {
         viewModelScope.launch {
-            _statisticsState.value = Resource.Loading()
+            // Keep existing data visible during reload
+            val existing = _statisticsState.value.data
+            _statisticsState.value = Resource.Loading(existing)
             try {
-                val startDate = java.time.LocalDate.now().withDayOfMonth(1).toString()
-                val endDate = java.time.LocalDate.now().withDayOfMonth(java.time.LocalDate.now().lengthOfMonth()).toString()
-                val response = statisticsApi.getStatistics(startDate, endDate)
+                val today = LocalDate.now()
+                val (startDate, endDate) = when (period) {
+                    StatsPeriod.WEEKLY -> {
+                        val start = today.with(DayOfWeek.MONDAY)
+                        val end = today.with(DayOfWeek.SUNDAY)
+                        start to end
+                    }
+                    StatsPeriod.MONTHLY -> {
+                        val start = today.withDayOfMonth(1)
+                        val end = today.with(TemporalAdjusters.lastDayOfMonth())
+                        start to end
+                    }
+                    StatsPeriod.YEARLY -> {
+                        val start = today.withDayOfYear(1)
+                        val end = today.with(TemporalAdjusters.lastDayOfYear())
+                        start to end
+                    }
+                    StatsPeriod.ALL_TIME -> {
+                        val start = LocalDate.of(2000, 1, 1)
+                        val end = LocalDate.of(2100, 1, 1)
+                        start to end
+                    }
+                }
+                val response = statisticsApi.getStatistics(startDate.toString(), endDate.toString())
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     _statisticsState.value = Resource.Success(response.body()!!.data!!)
                 } else {

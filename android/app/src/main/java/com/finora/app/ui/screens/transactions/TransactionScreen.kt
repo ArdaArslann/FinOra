@@ -48,6 +48,7 @@ fun TransactionScreen(
 
     LaunchedEffect(Unit) {
         viewModel.fetchTransactions()
+        categoryViewModel.fetchCategories()
     }
 
     LaunchedEffect(transactionState) {
@@ -87,23 +88,58 @@ fun TransactionScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (transactionState is Resource.Loading) {
+            val isLoading = transactionState is Resource.Loading
+            val transactions = transactionState.data ?: emptyList()
+
+            if (isLoading && transactions.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = PrimaryNeon)
                 }
-            } else if (transactionState is Resource.Success) {
-                val transactions = transactionState.data ?: emptyList()
-                
-                if (transactions.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No transactions found.", color = Color.White.copy(alpha = 0.5f))
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(transactions, key = { it.id }) { transaction ->
+            } else if (transactions.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No transactions found.", color = Color.White.copy(alpha = 0.5f))
+                }
+            } else {
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = PrimaryNeon,
+                        trackColor = Color.White.copy(alpha = 0.1f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                val groupedTransactions = transactions.groupBy { it.transactionDate }
+                    .toSortedMap(compareByDescending { it })
+                    
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    groupedTransactions.forEach { (dateStr, items) ->
+                        item(key = dateStr) {
+                            val displayDate = try {
+                                val date = LocalDate.parse(dateStr)
+                                val today = LocalDate.now()
+                                val yesterday = today.minusDays(1)
+                                when (date) {
+                                    today -> "Today"
+                                    yesterday -> "Yesterday"
+                                    else -> date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+                                }
+                            } catch (e: Exception) {
+                                dateStr
+                            }
+                            
+                            Text(
+                                text = displayDate,
+                                color = Color.White.copy(alpha = 0.6f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                            )
+                        }
+                        
+                        items(items, key = { it.id }) { transaction ->
                             var isDeleted by remember { mutableStateOf(false) }
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = {
@@ -114,7 +150,7 @@ fun TransactionScreen(
                                     } else false
                                 }
                             )
-
+    
                             AnimatedVisibility(
                                 visible = !isDeleted,
                                 exit = shrinkVertically(animationSpec = tween(durationMillis = 300)) + fadeOut()
@@ -143,13 +179,6 @@ fun TransactionScreen(
                                 }
                             }
                         }
-                    }
-                }
-            } else if (transactionState is Resource.Error) {
-                // Snackbar handles the error, show empty state if no data
-                if (transactionState.data.isNullOrEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No transactions found.", color = Color.White.copy(alpha = 0.5f))
                     }
                 }
             }

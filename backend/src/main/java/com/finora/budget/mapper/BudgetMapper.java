@@ -20,7 +20,8 @@ public class BudgetMapper {
                 entity.getCategory().getId(),
                 entity.getCategory().getName(),
                 entity.getCategory().getIcon(),
-                entity.getCategory().getColor()
+                entity.getCategory().getColor(),
+                entity.getSpent() != null ? entity.getSpent() : java.math.BigDecimal.ZERO
         );
     }
 
