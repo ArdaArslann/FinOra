@@ -1,6 +1,4 @@
-# Product Requirements Document
-
-## FinOra
+# Product Requirements Document — FinOra
 
 ---
 
@@ -46,7 +44,7 @@ FinOra provides a modern and intelligent finance management experience with:
 
 ## 4. Target Users
 
-- University Students
+- University students
 - Employees
 - Freelancers
 - Individuals who want to improve their financial habits
@@ -54,592 +52,292 @@ FinOra provides a modern and intelligent finance management experience with:
 
 ---
 
-## 5. MVP Features
+## 5. Features
 
-### Authentication
+### 5.1 Authentication
 
-- User Registration
-- User Login
-- JWT Authentication (Access Token — 1 hour)
-- Refresh Token (server-stored, used to renew access tokens)
-- Automatic token refresh on 401 (Android client)
-- Secure password handling (BCrypt)
-- Authenticated current-user resolution
-- User data isolation
-
----
-
-### Categories
-
-- Create Category
-- Update Category
-- Delete Category
-- List Categories
-- User-specific categories
-- Category icon
-- Category color
-- Default category seeding on registration
-
-**Default Categories:**
-
-- Food
-- Transport
-- Shopping
-- Bills
-- Entertainment
-- Health
-- Other
+| Feature | Status |
+|---|---|
+| User Registration | ✅ |
+| User Login | ✅ |
+| JWT Access Token (1 hour) | ✅ |
+| Refresh Token (server-stored) | ✅ |
+| Automatic token refresh on 401 (Android) | ✅ |
+| BCrypt password hashing | ✅ |
+| Authenticated current-user resolution | ✅ |
+| User data isolation | ✅ |
 
 ---
 
-### Transactions
+### 5.2 Categories
 
-- Create Transaction
-- Update Transaction
-- Delete Transaction
-- Get Transaction by ID
-- List Transactions
-- Income Tracking
-- Expense Tracking
-- Transaction descriptions
-- Transaction dates
-- Category assignment
-- Optional receipt association
+| Feature | Status |
+|---|---|
+| Create Category | ✅ |
+| Update Category | ✅ |
+| Delete Category | ✅ |
+| List Categories | ✅ |
+| User-specific categories | ✅ |
+| Category icon | ✅ |
+| Category color | ✅ |
+| Default category seeding on registration | ✅ |
 
-**Transaction Types:**
-
-- Income
-- Expense
-
-Transactions are associated with the authenticated user and one of the user's categories.
+**Default Categories:** Food, Transport, Shopping, Bills, Entertainment, Health, Other
 
 ---
 
-### Budget Management
+### 5.3 Transactions
 
-- Create Budget
-- Update Budget
-- Delete Budget
-- List Budgets
-- Category-based budgets
-- Daily budgets
-- Weekly budgets
-- Monthly budgets
-- Yearly budgets
-- Budget start date
-- Budget end date
-- Budget amount
-- Budget usage tracking
-- Remaining budget calculation
-- Budget usage percentage
+| Feature | Status |
+|---|---|
+| Create Transaction | ✅ |
+| Update Transaction | ✅ |
+| Delete Transaction | ✅ |
+| Get Transaction by ID | ✅ |
+| List Transactions | ✅ |
+| Income tracking | ✅ |
+| Expense tracking | ✅ |
+| Transaction description | ✅ |
+| Transaction date | ✅ |
+| Category assignment | ✅ |
+| Optional receipt association | ✅ |
 
-Budget spending is calculated from transactions belonging to the same user and category within the budget period.
+**Transaction Types:** `INCOME`, `EXPENSE`
 
 ---
 
-### Dashboard
+### 5.4 Budget Management
 
-FinOra provides a dynamic financial dashboard based on the user's transactions and budgets.
+| Feature | Status |
+|---|---|
+| Create Budget | ✅ |
+| Update Budget | ✅ |
+| Delete Budget | ✅ |
+| List Budgets | ✅ |
+| Category-based budgets | ✅ |
+| Daily / Weekly / Monthly / Yearly periods | ✅ |
+| Budget start and end dates | ✅ |
+| Budget usage tracking | ✅ |
+| Remaining budget calculation | ✅ |
+| Budget usage percentage | ✅ |
+| Budget risk flags (>80%, >100%) | ✅ |
 
-**Financial Summary:**
-
-- Overall income
-- Overall expenses
-- Overall balance
-- Current-month income
-- Current-month expenses
-- Current-month balance
-
-**Spending Analytics:**
-
-- Current-month category spending
-- Category-based expense analysis
-- Recent transactions
-
-**Budget Overview:**
-
-- Budget amount
-- Amount spent
-- Remaining amount
-- Budget usage percentage
-- Budget risk information (>80% warning, >100% exceeded)
-
-Dashboard statistics are calculated dynamically from the user's financial data rather than being stored as duplicated aggregate values.
+Budget spending is dynamically calculated from transactions within the same user, category, and period.
 
 ---
 
-### Statistics & Reporting
+### 5.5 Dashboard
 
-FinOra provides date-range financial reports beyond the current-month dashboard.
+| Feature | Status |
+|---|---|
+| Overall income / expenses / balance | ✅ |
+| Current-month income / expenses / balance | ✅ |
+| Current-month category spending | ✅ |
+| Budget overview (spent, remaining, %) | ✅ |
+| Budget risk information | ✅ |
+| Recent transactions | ✅ |
 
-**Report Inputs:**
-
-- Start date
-- End date
-
-**Report Outputs:**
-
-- Total income for the period
-- Total expenses for the period
-- Net balance
-- Daily statistics (income/expense per day)
-- Monthly statistics (income/expense per month)
-- Category breakdown (income/expense per category)
-- Budget performance per category (amount, spent, remaining, usage %, over-budget flag)
+Dashboard statistics are calculated dynamically — no duplicated aggregate storage.
 
 ---
 
-## 6. AI Features
+### 5.6 Statistics & Reporting
 
-### AI Financial Insights
+| Feature | Status |
+|---|---|
+| Date-range report (startDate, endDate) | ✅ |
+| Total income and expenses for period | ✅ |
+| Net balance | ✅ |
+| Daily breakdown | ✅ |
+| Monthly breakdown | ✅ |
+| Category breakdown | ✅ |
+| Budget performance (spent, budget, %, over-budget) | ✅ |
 
-FinOra provides AI-powered financial analysis based on the user's financial context.
+---
 
-**The AI receives structured information including:**
+### 5.7 Receipt Processing
 
-- Overall income
-- Overall expenses
-- Overall balance
-- Current-month income
-- Current-month expenses
-- Current-month balance
-- Category spending
-- Existing budgets
-- Budget amount
-- Budget spending
-- Remaining budget
-- Budget usage percentage
+| Feature | Status |
+|---|---|
+| Receipt upload (JPG, JPEG, PNG, PDF — max 5 MB) | ✅ |
+| Receipt storage (local) | ✅ |
+| Gemini Vision extraction | ✅ |
+| Receipt extraction persistence | ✅ |
+| Receipt status lifecycle (UPLOADED → PROCESSING → PROCESSED / FAILED) | ✅ |
+| Receipt confirmation (user review + approve) | ✅ |
+| EXPENSE transaction creation on confirmation | ✅ |
+| Receipt-to-transaction linking | ✅ |
+| One-time confirmation enforcement | ✅ |
 
-**The AI generates:**
+**Extracted fields:** `merchantName`, `totalAmount`, `transactionDate`, `currency`, `suggestedCategory`
 
-- Financial summary
-- Monthly financial status
-- Budget insights
-- Practical financial recommendations
+---
 
-**AI Response:**
+### 5.8 AI Financial Insights
+
+| Feature | Status |
+|---|---|
+| Structured financial context sent to AI | ✅ |
+| Financial summary generation | ✅ |
+| Monthly status (income, expenses, balance) | ✅ |
+| Budget insights per category | ✅ |
+| Practical recommendations | ✅ |
+| Gemini AI provider | ✅ |
+| OpenAI AI provider | ✅ |
+| AI provider abstraction | ✅ |
+| Per-user Redis rate limiting (60s TTL) | ✅ |
+
+**AI Response schema:**
 
 ```json
 {
-  "summary": "short financial summary",
-  "monthlyStatus": {
-    "income": 30000,
-    "expenses": 2500,
-    "balance": 27500
-  },
+  "summary": "...",
+  "monthlyStatus": { "income": 0, "expenses": 0, "balance": 0 },
   "budgetInsights": [
-    {
-      "category": "Food",
-      "spent": 2000,
-      "budget": 2500,
-      "remaining": 500,
-      "usagePercentage": 80
-    }
+    { "category": "Food", "spent": 0, "budget": 0, "remaining": 0, "usagePercentage": 0 }
   ],
-  "recommendations": [
-    "Monitor your Food budget closely."
-  ]
+  "recommendations": ["..."]
 }
 ```
 
-**AI Financial Rules:**
-
-The AI must:
-
-- Use only the financial data provided by the application.
-- Never invent financial information.
-- Never assume personal information that was not provided.
-- Treat existing budgets as already defined.
-- Never recommend creating a new budget for a category that already has a budget.
-- Never claim that an existing budget is missing.
-- Use calculated budget spending rather than inferring spending from unrelated category data.
-- Consider budgets above 80% usage as potential risks.
-- Clearly identify budgets above 100% usage as exceeded.
-- Provide practical recommendations based only on the available financial data.
+**AI Rules:**
+- Uses only supplied financial data — never invents information.
+- Does not recommend creating a budget when one already exists.
+- Budgets >80% usage → risk. Budgets >100% → exceeded.
 
 ---
 
-### AI Provider Abstraction
+## 6. API
 
-AI financial insight generation is implemented through a provider abstraction (`FinancialInsightGenerator`).
+| Domain | Base Path |
+|---|---|
+| Authentication | `/auth` |
+| Categories | `/categories` |
+| Transactions | `/transactions` |
+| Budgets | `/budgets` |
+| Dashboard | `/dashboard` |
+| Statistics | `/statistics` |
+| Receipts | `/receipts` |
+| User Profile | `/users` |
 
-The application currently supports:
-
-- Gemini (`GeminiFinancialInsightGenerator`)
-- OpenAI (`OpenAIFinancialInsightGenerator`)
-
-The financial insight business logic (context building, prompt building, budget rules) is independent from the specific AI provider.
-
----
-
-### AI Financial Insight Rate Limiting
-
-Financial insight generation is protected by a per-user rate limiter.
-
-Each authenticated user can request a financial insight once every 60 seconds.
-
-Redis is used to store the temporary rate-limit state.
-
-The rate-limit key structure:
-
-```
-finora:rate-limit:financial-insight:{userId}
-```
-
-The key automatically expires after 60 seconds using Redis TTL.
-
-The rate limiter uses an atomic Redis operation so concurrent requests cannot bypass the limit.
+- All requests/responses use DTOs (entities are not exposed).
+- Jakarta Bean Validation on all request bodies.
+- Centralized exception handling (`GlobalExceptionHandler`) for consistent `ApiErrorResponse`.
+- Swagger / OpenAPI available at `/swagger-ui.html`.
 
 ---
 
-## 7. Receipt Features
+## 7. Security & Data Isolation
 
-### Receipt Upload
+| Requirement | Implementation |
+|---|---|
+| Authentication | JWT (access + refresh) |
+| Password storage | BCrypt |
+| User data isolation | All queries scoped to authenticated user |
+| Secret management | Environment variables (never hardcoded) |
+| Token storage (Android) | DataStore only — never logs |
+| Session termination | Tokens cleared on logout and failed refresh |
 
-Users can upload receipt files through the receipt API.
-
-**Supported file types:**
-
-- JPG
-- JPEG
-- PNG
-- PDF
-
-**Maximum file size:** 5 MB
-
-Uploaded receipts are associated with the authenticated user.
-
-Each receipt contains:
-
-- Original file name
-- Storage key
-- Content type
-- File size
-- Processing status
-- Upload timestamp
-- Optional transaction association
+Users cannot access another user's data by supplying a foreign entity ID.
 
 ---
 
-### AI Receipt Processing
+## 8. Data & Persistence
 
-FinOra processes receipt images using Gemini Vision.
+| Technology | Role |
+|---|---|
+| PostgreSQL 17 | Primary persistent data store |
+| Redis 8 | Temporary state (AI rate limiting) |
+| Flyway | Schema migrations (V1–V9) |
+| Spring Data JPA + Hibernate | ORM |
 
-**The active receipt processing flow:**
-
-```
-Receipt Image
- |
- v
-GeminiVisionReceiptExtractor
- |
- v
-Structured JSON
- |
- v
-ReceiptExtractionEntity
-```
-
-**The AI extracts:**
-
-- Merchant name
-- Total amount
-- Transaction date
-- Currency
-- Suggested category
-
-The extracted information is stored as a `ReceiptExtraction`.
-
-The receipt extraction result is not automatically converted into a financial transaction.
+- Hibernate schema auto-generation is disabled.
+- All entity IDs use UUID.
+- Common audit fields: `id`, `createdAt`, `updatedAt`.
 
 ---
 
-### Receipt Extraction
-
-The receipt extraction response contains:
-
-```json
-{
-  "merchantName": "VISTA ROYAL OTEL MESKEN",
-  "totalAmount": 1500.00,
-  "transactionDate": "2023-04-26",
-  "currency": "TRY",
-  "suggestedCategory": "Food"
-}
-```
-
-The suggested category is an AI recommendation only.
-
-The user remains responsible for confirming the final transaction category and financial information.
-
----
-
-### Receipt Confirmation
-
-Receipt extraction and transaction creation are intentionally separated.
-
-After a receipt has been processed, the user can review the extracted information and confirm it.
-
-**Confirmation endpoint:** `POST /receipts/{id}/confirm`
-
-**The confirmation request contains:**
-
-- amount
-- description
-- transactionDate
-- categoryId
-
-**After confirmation:**
-
-1. An EXPENSE transaction is created.
-2. The selected category is assigned.
-3. The receipt is linked to the transaction.
-4. The receipt remains in PROCESSED status.
-
-A receipt cannot be confirmed more than once.
-
-If a receipt has already been linked to a transaction, the API returns `RECEIPT_ALREADY_CONFIRMED`.
-
----
-
-### Receipt Status
-
-Receipts use the following processing states:
-
-```
-UPLOADED → PROCESSING → PROCESSED
-                      ↘ FAILED
-```
-
-A successfully processed receipt can subsequently be confirmed by the user.
-
----
-
-## 8. API
-
-FinOra exposes RESTful APIs using Spring Boot.
-
-**The main API domains are:**
-
-- Authentication (`/auth`)
-- Categories (`/categories`)
-- Transactions (`/transactions`)
-- Budgets (`/budgets`)
-- Receipts (`/receipts`)
-- Dashboard (`/dashboard`)
-- Statistics (`/statistics`)
-- User Profile (`/users`)
-
-API requests use DTOs rather than exposing persistence entities directly.
-
-Jakarta Bean Validation is used to validate incoming requests.
-
-The application provides centralized exception handling for consistent API error responses (`ApiErrorResponse`, `ValidationErrorResponse`).
-
-Swagger / OpenAPI is used for:
-
-- API documentation
-- Endpoint discovery
-- Request testing
-- Response inspection
-- Development integration testing
-
----
-
-## 9. Security and Data Isolation
-
-FinOra uses JWT-based authentication with a refresh token scheme.
-
-Every financial resource belongs to an authenticated user.
-
-The application enforces user ownership for:
-
-- Categories
-- Transactions
-- Budgets
-- Receipts
-- Receipt extractions
-- Dashboard data
-- Statistics data
-
-Users cannot access another user's financial data by providing another user's entity ID.
-
-All business operations are performed within the context of the authenticated user.
-
-Secrets (JWT signing key, DB password, AI API keys) are loaded from environment variables and never hardcoded in the repository.
-
----
-
-## 10. Data and Persistence
-
-PostgreSQL is the primary persistent database.
-
-The application uses:
-
-- Spring Data JPA
-- Hibernate
-- Flyway
-
-Database schema changes are managed through Flyway migrations (V1–V9).
-
-Hibernate automatic schema generation is disabled.
-
-Redis is used for temporary application state (AI rate limiting) and is not used as the primary financial data store.
-
-Entity identifiers use UUID.
-
-Common audit fields:
-
-- id (UUID)
-- createdAt
-- updatedAt
-
----
-
-## 11. Infrastructure
-
-FinOra's backend environment is containerized using Docker.
-
-**The main services are:**
-
-- FinOra Backend (Spring Boot)
-- PostgreSQL 17
-- Redis 8
-
-The services are orchestrated using Docker Compose.
+## 9. Infrastructure
 
 ```
 Docker Compose
  |
- +---- FinOra Backend (port 8080)
- |
- +---- PostgreSQL (port 5432)
- |
- +---- Redis (port 6379)
+ ├── FinOra Backend (port 8080)
+ ├── PostgreSQL 17 (port 5432)
+ └── Redis 8 (port 6379)
 ```
 
-PostgreSQL provides persistent application data storage.
-
-Redis provides temporary infrastructure functionality (rate limiting).
-
-Environment variables are injected at runtime via `.env` (not committed to the repository).
+Secrets are injected via environment variables (`.env` file, not committed to the repository).
 
 ---
 
-## 12. Non-Functional Requirements
+## 10. Non-Functional Requirements
 
 ### Security
-
-- JWT-based authentication (access + refresh tokens)
-- Password hashing (BCrypt)
+- JWT authentication (access + refresh tokens)
+- BCrypt password hashing
 - User-level data isolation
-- Input validation (Jakarta Bean Validation)
+- Input validation
 - Centralized exception handling
-- No hardcoded secrets in the repository
+- No hardcoded secrets
 
 ### Reliability
-
 - Explicit transaction boundaries
-- Database migrations through Flyway
-- Receipt processing failure handling (FAILED status)
+- Flyway database migrations
+- Receipt processing failure handling (`FAILED` status)
 - AI provider error handling
 - Retry handling for transient Gemini Vision failures
-- Redis-backed rate limiting
-- Automatic token refresh on 401 (Android client)
+- Atomic Redis rate limiting
+- Automatic token refresh on 401 (Android)
 
 ### Performance
-
-- Database queries are scoped to the authenticated user
-- Dashboard calculations are performed dynamically from relevant financial data
-- Redis is used for low-latency rate-limit checks
-- AI requests are protected against excessive repeated calls
+- All DB queries scoped to authenticated user
+- Dashboard calculated dynamically (no stale aggregates)
+- Redis for low-latency rate-limit checks
+- AI calls protected by per-user rate limiting
 
 ### Maintainability
-
-- Layered architecture
-- Service abstractions
+- Layered architecture per module
+- Service / repository abstractions
 - DTO-based API contracts
-- Repository abstractions
 - AI provider abstraction
-- Clear separation between receipt extraction and transaction creation
-- Centralized exception handling
+- Clear separation: receipt extraction ≠ transaction creation
 
 ---
 
-## 13. Current MVP Status
+## 11. Implementation Status
 
-### Backend — Complete
+### Backend — ✅ Complete
 
-- ✅ User registration & login
-- ✅ JWT authentication (access + refresh tokens)
-- ✅ Default category seeding on registration
-- ✅ Category management
-- ✅ Transaction management
-- ✅ Budget management
-- ✅ Dashboard financial calculations
-- ✅ Statistics & Reporting (date-range, daily/monthly/category/budget)
-- ✅ Receipt upload & local storage
-- ✅ Gemini Vision receipt extraction
-- ✅ Receipt extraction persistence
-- ✅ Receipt confirmation → transaction creation
-- ✅ Receipt-to-transaction linking
-- ✅ AI financial insights (Gemini + OpenAI)
-- ✅ Structured AI insight responses
-- ✅ AI financial insight budget rules
-- ✅ Redis-backed AI rate limiting
-- ✅ Swagger / OpenAPI API documentation
-- ✅ PostgreSQL persistence
-- ✅ Flyway database migrations (V1–V9)
-- ✅ Dockerized backend environment
+| Module | Status |
+|---|---|
+| Authentication (access + refresh tokens) | ✅ |
+| Default category seeding | ✅ |
+| Category CRUD | ✅ |
+| Transaction CRUD | ✅ |
+| Budget CRUD + usage | ✅ |
+| Dashboard | ✅ |
+| Statistics & Reporting | ✅ |
+| Receipt upload & storage | ✅ |
+| Gemini Vision receipt extraction | ✅ |
+| Receipt confirmation → transaction | ✅ |
+| AI financial insights (Gemini + OpenAI) | ✅ |
+| Redis rate limiting | ✅ |
+| Swagger / OpenAPI | ✅ |
+| Flyway migrations (V1–V9) | ✅ |
+| Docker Compose | ✅ |
 
-### Android — Live API Integration Complete
+### Android — ✅ Complete
 
-- ✅ Onboarding screen
-- ✅ Register & Login (with backend error messages)
-- ✅ Token Manager (DataStore)
-- ✅ Automatic token refresh (OkHttp Authenticator)
-- ✅ Dynamic auth-state navigation
-- ✅ Dashboard screen (live API)
-- ✅ Transactions screen
-- ✅ Budgets screen
-- ✅ Categories screen
-- ✅ Statistics screen (custom Canvas charts)
-- ✅ Receipt screen (image picker + multipart upload)
-- ✅ Profile screen
-- ✅ MainScreen Scaffold with bottom nav + central FAB
-- ⏳ AI Insights screen
-- ⏳ Room local caching
-- ⏳ Testing & UX polish
-
----
-
-## 14. Android Client Integration
-
-### Integration Goals
-
-The Android application is the client for the FinOra REST API. The backend remains the source of truth for authentication, financial data, calculations, and AI insights. The Android app manages presentation, UI state, networking, and local caching.
-
-### Features & Implementation Guidelines
-
-- **Authentication & Session**: Register and Login flows. Store access/refresh tokens securely via `TokenManager` (DataStore). Handle 401 Unauthorized by attempting a token refresh once via `TokenAuthenticator`. Never perform automatic login to recover from 401 — clear tokens and redirect to Login.
-- **Categories**: Category listing and CRUD. Server-created default categories must not be duplicated by the Android client.
-- **Transactions**: Create, update, delete, detail, and list flows. Refresh relevant UI state from server responses.
-- **Budgets**: Budget CRUD, displaying amount, spending, remaining amount, usage percentage, and risk status.
-- **Dashboard**: Build using backend-calculated values (overall income, expenses, balance, recent transactions, category spending, budget overview). Avoid recalculating authoritative totals locally.
-- **Statistics and Reporting**: Date-range reports. Render custom Canvas charts for daily/monthly distributions and category breakdowns. Handle empty periods gracefully.
-- **Receipt Upload & Confirmation**: Multipart receipt upload showing processing states (UPLOADED → PROCESSING → PROCESSED / FAILED). Display extracted receipt data for user review (merchant, amount, date, currency, suggested category). Confirmation screen converts the extraction into a transaction.
-- **AI Financial Insights**: Consume the structured AI response to display summary, monthly financial status, budget insights, and recommendations. (Android screen pending.)
-- **Error Handling & UI State**: Every screen must explicitly handle Loading, Success, Empty, and Error states. Use `NetworkUtils` and `ApiResponse<T>` to map backend error codes (e.g., `UNAUTHORIZED`, `INVALID_CREDENTIALS`, `RECEIPT_ALREADY_CONFIRMED`) into user-friendly messages.
-
-### Definition of Done
-
-A complete integration allows a new user to:
-
-1. Register and receive default categories automatically
-2. Log in and maintain session across app restarts
-3. Manage categories, transactions, and budgets
-4. View dashboard and statistics with live data
-5. Upload and confirm receipts → transaction created
-6. View AI financial insights
-
-Errors are mapped consistently and no sensitive information appears in logs.
+| Feature | Status |
+|---|---|
+| Onboarding | ✅ |
+| Register & Login | ✅ |
+| Token refresh + auth-state navigation | ✅ |
+| Dashboard | ✅ |
+| Transactions | ✅ |
+| Budgets | ✅ |
+| Categories | ✅ |
+| Statistics (custom Canvas charts) | ✅ |
+| Receipt upload (image picker + backend) | ✅ |
+| Profile | ✅ |
