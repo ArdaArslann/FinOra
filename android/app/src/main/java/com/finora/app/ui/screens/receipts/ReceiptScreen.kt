@@ -292,6 +292,20 @@ fun ExtractedDataCard(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            OutlinedTextField(
+                value = transactionDate,
+                onValueChange = { transactionDate = it },
+                label = { Text("Transaction Date (YYYY-MM-DD)") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = PrimaryNeon,
+                    focusedLabelColor = PrimaryNeon
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }

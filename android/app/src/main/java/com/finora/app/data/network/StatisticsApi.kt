@@ -5,14 +5,14 @@ import retrofit2.http.GET
 import com.google.gson.annotations.SerializedName
 
 data class MonthlyStatisticDto(
-    val month: String,
+    @com.google.gson.annotations.SerializedName("yearMonth") val month: String,
     val income: Double,
     val expense: Double
 )
 
 data class CategoryStatisticDto(
     val categoryName: String,
-    @SerializedName("amount") val totalAmount: Double,
+    @com.google.gson.annotations.SerializedName("amount") val totalAmount: Double,
     val percentage: Double
 )
 

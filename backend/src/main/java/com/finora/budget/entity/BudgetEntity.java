@@ -7,6 +7,7 @@ import com.finora.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 
@@ -39,6 +40,10 @@ public class BudgetEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @Transient
+    @Setter
+    private BigDecimal spent;
 
     private BudgetEntity(BigDecimal amount, BudgetPeriod period, LocalDate startDate, LocalDate endDate,
             CategoryEntity category, UserEntity user) {

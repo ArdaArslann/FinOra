@@ -20,6 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.finora.transaction.repository.TransactionRepository;
+import com.finora.transaction.enums.TransactionType;
+import com.finora.dashboard.projection.BudgetSpentProjection;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,13 @@ public class BudgetServiceImpl implements BudgetService {
     private final BudgetMapper budgetMapper;
     private final CurrentUserService currentUserService;
     private final StringRedisTemplate redisTemplate;
+    private final TransactionRepository transactionRepository;
+    
+    private Map<UUID, BigDecimal> getSpentMap(UserEntity user) {
+        return transactionRepository.findBudgetSpentByUser(user, TransactionType.EXPENSE)
+                .stream()
+                .collect(Collectors.toMap(BudgetSpentProjection::budgetId, BudgetSpentProjection::spent));
+    }
     
     private void evictInsightCache(UUID userId) {
         try {
@@ -69,6 +82,8 @@ public class BudgetServiceImpl implements BudgetService {
         
         evictInsightCache(currentUser.getId());
 
+        // Newly created budget has no transactions yet, spent is 0
+        budget.setSpent(BigDecimal.ZERO);
         return budgetMapper.toResponse(budget);
     }
 
@@ -77,11 +92,15 @@ public class BudgetServiceImpl implements BudgetService {
     public List<BudgetResponse> getAll() {
 
         UserEntity currentUser = currentUserService.getCurrentUser();
+        Map<UUID, BigDecimal> spentMap = getSpentMap(currentUser);
 
         return budgetRepository
                 .findAllByUserOrderByStartDateDesc(currentUser)
                 .stream()
-                .map(budgetMapper::toResponse)
+                .map(budget -> {
+                    budget.setSpent(spentMap.getOrDefault(budget.getId(), BigDecimal.ZERO));
+                    return budgetMapper.toResponse(budget);
+                })
                 .toList();
     }
 
@@ -93,6 +112,10 @@ public class BudgetServiceImpl implements BudgetService {
 
         BudgetEntity budget =
                 getBudgetOrThrow(id, currentUser);
+                
+        Map<UUID, BigDecimal> spentMap = getSpentMap(currentUser);
+        BigDecimal spent = spentMap.getOrDefault(budget.getId(), BigDecimal.ZERO);
+        budget.setSpent(spent);
 
         return budgetMapper.toResponse(budget);
     }
@@ -132,6 +155,10 @@ public class BudgetServiceImpl implements BudgetService {
         budget = budgetRepository.save(budget);
         
         evictInsightCache(currentUser.getId());
+
+        Map<UUID, BigDecimal> spentMap = getSpentMap(currentUser);
+        BigDecimal spent = spentMap.getOrDefault(budget.getId(), BigDecimal.ZERO);
+        budget.setSpent(spent);
 
         return budgetMapper.toResponse(budget);
     }

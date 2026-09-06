@@ -23,7 +23,9 @@ public record BudgetResponse(
 
         String categoryIcon,
 
-        String categoryColor
+        String categoryColor,
+        
+        BigDecimal spent
 
 ) {
 }

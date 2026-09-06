@@ -30,19 +30,25 @@ import com.finora.app.ui.theme.PrimaryNeon
 import com.finora.app.ui.theme.SpaceDark
 import com.finora.app.ui.theme.SuccessGreen
 import com.finora.app.ui.viewmodels.BudgetViewModel
+import com.finora.app.ui.viewmodels.CategoryViewModel
+import com.finora.app.data.network.CategoryDto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetScreen(
-    viewModel: BudgetViewModel = hiltViewModel()
+    viewModel: BudgetViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
     val budgetState by viewModel.budgets.collectAsState()
+    val categoryState by categoryViewModel.categories.collectAsState()
+    val categories = categoryState.data ?: emptyList()
     var showAddDialog by remember { mutableStateOf(false) }
     var editingBudget by remember { mutableStateOf<BudgetDto?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.fetchBudgets()
+        categoryViewModel.fetchCategories()
     }
 
     LaunchedEffect(budgetState) {
@@ -82,67 +88,69 @@ fun BudgetScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (budgetState is Resource.Loading) {
+            val isLoading = budgetState is Resource.Loading
+            val budgets = budgetState.data ?: emptyList()
+
+            if (isLoading && budgets.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = PrimaryNeon)
                 }
-            } else if (budgetState is Resource.Success) {
-                val budgets = budgetState.data ?: emptyList()
-                if (budgets.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No budgets found.", color = Color.White.copy(alpha = 0.5f))
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(budgets, key = { it.id }) { budget ->
-                            var isDeleted by remember { mutableStateOf(false) }
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = {
-                                    if (it == SwipeToDismissBoxValue.EndToStart) {
-                                        isDeleted = true
-                                        viewModel.deleteBudget(budget.id)
-                                        true
-                                    } else false
-                                }
-                            )
+            } else if (budgets.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No budgets found.", color = Color.White.copy(alpha = 0.5f))
+                }
+            } else {
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = PrimaryNeon,
+                        trackColor = Color.White.copy(alpha = 0.1f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 80.dp)
+                ) {
+                    items(budgets, key = { it.id }) { budget ->
+                        var isDeleted by remember { mutableStateOf(false) }
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = {
+                                if (it == SwipeToDismissBoxValue.EndToStart) {
+                                    isDeleted = true
+                                    viewModel.deleteBudget(budget.id)
+                                    true
+                                } else false
+                            }
+                        )
 
-                            AnimatedVisibility(
-                                visible = !isDeleted,
-                                exit = shrinkVertically(animationSpec = tween(durationMillis = 300)) + fadeOut()
-                            ) {
-                                SwipeToDismissBox(
-                                    state = dismissState,
-                                    enableDismissFromStartToEnd = false,
-                                    backgroundContent = {
-                                        if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .background(ErrorRed, shape = MaterialTheme.shapes.large)
-                                                    .padding(horizontal = 20.dp),
-                                                contentAlignment = Alignment.CenterEnd
-                                            ) {
-                                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
-                                            }
+                        AnimatedVisibility(
+                            visible = !isDeleted,
+                            exit = shrinkVertically(animationSpec = tween(durationMillis = 300)) + fadeOut()
+                        ) {
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                enableDismissFromStartToEnd = false,
+                                backgroundContent = {
+                                    if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(ErrorRed, shape = MaterialTheme.shapes.large)
+                                                .padding(horizontal = 20.dp),
+                                            contentAlignment = Alignment.CenterEnd
+                                        ) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
                                         }
                                     }
-                                ) {
-                                    BudgetItem(
-                                        budget = budget,
-                                        onClick = { editingBudget = budget }
-                                    )
                                 }
+                            ) {
+                                BudgetItem(
+                                    budget = budget,
+                                    onClick = { editingBudget = budget }
+                                )
                             }
                         }
-                    }
-                }
-            } else if (budgetState is Resource.Error) {
-                if (budgetState.data.isNullOrEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No budgets found.", color = Color.White.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -151,9 +159,26 @@ fun BudgetScreen(
 
     if (showAddDialog) {
         AddBudgetDialog(
+            categories = categories,
             onDismiss = { showAddDialog = false },
             onAdd = { amount, period, categoryId ->
-                viewModel.createBudget(CreateBudgetRequest(amount, period, categoryId))
+                val today = java.time.LocalDate.now()
+                val (start, end) = when(period) {
+                    "WEEKLY" -> {
+                        val monday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
+                        monday.toString() to monday.plusDays(6).toString()
+                    }
+                    "MONTHLY" -> {
+                        val firstDay = today.withDayOfMonth(1)
+                        firstDay.toString() to today.withDayOfMonth(today.lengthOfMonth()).toString()
+                    }
+                    "YEARLY" -> {
+                        val firstDay = today.withDayOfYear(1)
+                        firstDay.toString() to today.withDayOfYear(today.lengthOfYear()).toString()
+                    }
+                    else -> today.toString() to today.plusMonths(1).toString()
+                }
+                viewModel.createBudget(CreateBudgetRequest(amount, period, start, end, categoryId))
                 showAddDialog = false
             }
         )
@@ -162,6 +187,7 @@ fun BudgetScreen(
     if (editingBudget != null) {
         EditBudgetDialog(
             budget = editingBudget!!,
+            categories = categories,
             onDismiss = { editingBudget = null },
             onUpdate = { id, amount, period, categoryId ->
                 viewModel.updateBudget(
@@ -185,9 +211,9 @@ fun BudgetItem(
     budget: BudgetDto,
     onClick: () -> Unit = {}
 ) {
-    // We mock the spent amount for UI demonstration until we join it with transactions properly
-    val spent = budget.amount * 0.75 
-    val percentage = (spent / budget.amount).toFloat()
+    // Use the actual spent amount from backend, fallback to 0.0
+    val spent = budget.spent ?: 0.0
+    val percentage = if (budget.amount > 0) (spent / budget.amount).toFloat() else 0f
     
     val progressColor = when {
         percentage > 0.9f -> ErrorRed
@@ -222,14 +248,17 @@ fun BudgetItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddBudgetDialog(
+    categories: List<CategoryDto>,
     onDismiss: () -> Unit,
     onAdd: (amount: Double, period: String, categoryId: String) -> Unit
 ) {
     var amountStr by remember { mutableStateOf("") }
     var selectedPeriod by remember { mutableStateOf("MONTHLY") }
-    var categoryId by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf(categories.firstOrNull()) }
+    var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -237,6 +266,21 @@ fun AddBudgetDialog(
         title = { Text("New Budget", color = Color.White) },
         text = {
             Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    TextButton(onClick = { selectedPeriod = "WEEKLY" }) {
+                        Text("Week", color = if (selectedPeriod == "WEEKLY") PrimaryNeon else Color.White.copy(alpha = 0.5f))
+                    }
+                    TextButton(onClick = { selectedPeriod = "MONTHLY" }) {
+                        Text("Month", color = if (selectedPeriod == "MONTHLY") PrimaryNeon else Color.White.copy(alpha = 0.5f))
+                    }
+                    TextButton(onClick = { selectedPeriod = "YEARLY" }) {
+                        Text("Year", color = if (selectedPeriod == "YEARLY") PrimaryNeon else Color.White.copy(alpha = 0.5f))
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = amountStr,
                     onValueChange = { amountStr = it },
@@ -248,25 +292,47 @@ fun AddBudgetDialog(
                         focusedLabelColor = PrimaryNeon
                     )
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = categoryId,
-                    onValueChange = { categoryId = it },
-                    label = { Text("Category") }, // Normally a dropdown, simplify for now
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = PrimaryNeon,
-                        focusedLabelColor = PrimaryNeon
+                Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedCategory?.name ?: "Select Category",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = PrimaryNeon,
+                            focusedLabelColor = PrimaryNeon
+                        )
                     )
-                )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        categories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = {
+                                    selectedCategory = category
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 val amt = amountStr.toDoubleOrNull()
-                if (amt != null && categoryId.isNotBlank()) {
-                    onAdd(amt, selectedPeriod, categoryId)
+                if (amt != null && selectedCategory != null) {
+                    onAdd(amt, selectedPeriod, selectedCategory!!.id)
                 }
             }) {
                 Text("Add", color = PrimaryNeon)
@@ -280,15 +346,18 @@ fun AddBudgetDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBudgetDialog(
     budget: BudgetDto,
+    categories: List<CategoryDto>,
     onDismiss: () -> Unit,
     onUpdate: (id: String, amount: Double, period: String, categoryId: String) -> Unit
 ) {
     var amountStr by remember { mutableStateOf(budget.amount.toString()) }
     var selectedPeriod by remember { mutableStateOf(budget.period) }
-    var categoryId by remember { mutableStateOf(budget.categoryId) }
+    var selectedCategory by remember { mutableStateOf(categories.find { it.id == budget.categoryId }) }
+    var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -310,7 +379,7 @@ fun EditBudgetDialog(
                         Text("Year", color = if (selectedPeriod == "YEARLY") PrimaryNeon else Color.White.copy(alpha = 0.5f))
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = amountStr,
                     onValueChange = { amountStr = it },
@@ -321,13 +390,47 @@ fun EditBudgetDialog(
                         focusedBorderColor = PrimaryNeon,
                     )
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedCategory?.name ?: "Select Category",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.menuAnchor(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = PrimaryNeon,
+                            focusedLabelColor = PrimaryNeon
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        categories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = {
+                                    selectedCategory = category
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(onClick = {
                 val amt = amountStr.toDoubleOrNull()
-                if (amt != null && categoryId.isNotBlank()) {
-                    onUpdate(budget.id, amt, selectedPeriod, categoryId)
+                if (amt != null && selectedCategory != null) {
+                    onUpdate(budget.id, amt, selectedPeriod, selectedCategory!!.id)
                 }
             }) {
                 Text("Save", color = PrimaryNeon)

@@ -10,12 +10,15 @@ data class BudgetDto(
     val startDate: String,
     val endDate: String,
     val categoryId: String,
-    val createdAt: String
+    val createdAt: String?, // made nullable as backend doesn't send it in BudgetResponse
+    val spent: Double? = 0.0
 )
 
 data class CreateBudgetRequest(
     val amount: Double,
     val period: String,
+    val startDate: String,
+    val endDate: String,
     val categoryId: String
 )
 

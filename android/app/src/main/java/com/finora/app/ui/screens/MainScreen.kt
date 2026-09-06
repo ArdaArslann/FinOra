@@ -2,7 +2,7 @@ package com.finora.app.ui.screens
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
@@ -103,7 +103,7 @@ fun MainScreen(
                 },
                 containerColor = PrimaryNeon
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Receipt", tint = Color.Black)
+                Icon(Icons.Filled.CameraAlt, contentDescription = "Add Receipt", tint = Color.Black)
             }
         },
         floatingActionButtonPosition = FabPosition.Center
