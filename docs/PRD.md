@@ -146,10 +146,11 @@ Dashboard statistics are calculated dynamically — no duplicated aggregate stor
 | Feature | Status |
 |---|---|
 | Date-range report (startDate, endDate) | ✅ |
-| Total income and expenses for period | ✅ |
-| Net balance | ✅ |
-| Daily breakdown | ✅ |
-| Monthly breakdown | ✅ |
+| View Monthly Overview | ✅ |
+| View Yearly Overview | ✅ |
+| View All-Time Overview | ✅ |
+| View Category Breakdown (Pie Chart) | ✅ |
+| View Trend Analysis (Bar Chart with Tooltips) | ✅ |
 | Category breakdown | ✅ |
 | Budget performance (spent, budget, %, over-budget) | ✅ |
 
