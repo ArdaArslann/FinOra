@@ -173,6 +173,7 @@ public class ReceiptServiceImpl implements ReceiptService {
     private static final Set<String> ALLOWED_CONTENT_TYPES =
             Set.of(
                     "image/jpeg",
+                    "image/jpg",
                     "image/png",
                     "application/pdf"
             );
@@ -203,9 +204,15 @@ public class ReceiptServiceImpl implements ReceiptService {
 
         String contentType = file.getContentType();
 
-        if (contentType == null ||
-                !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
-
+        if (contentType == null) {
+            throw new BusinessException(
+                    "INVALID_RECEIPT_FILE_TYPE",
+                    "Only JPG, PNG and PDF files are allowed."
+            );
+        }
+        
+        String ct = contentType.toLowerCase().split(";")[0].trim();
+        if (!ALLOWED_CONTENT_TYPES.contains(ct)) {
             throw new BusinessException(
                     "INVALID_RECEIPT_FILE_TYPE",
                     "Only JPG, PNG and PDF files are allowed."

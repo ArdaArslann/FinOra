@@ -30,4 +30,10 @@ interface TransactionApi {
 
     @DELETE("transactions/{id}")
     suspend fun deleteTransaction(@Path("id") id: String): Response<ApiResponse<Unit>>
+
+    @PUT("transactions/{id}")
+    suspend fun updateTransaction(
+        @Path("id") id: String,
+        @Body request: CreateTransactionRequest
+    ): Response<ApiResponse<TransactionDto>>
 }

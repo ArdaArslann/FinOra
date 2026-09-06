@@ -13,5 +13,5 @@ data class UserDto(
 
 interface UserApi {
     @GET("users/me")
-    suspend fun getCurrentUser(): Response<UserDto>
+    suspend fun getCurrentUser(): Response<ApiResponse<UserDto>>
 }

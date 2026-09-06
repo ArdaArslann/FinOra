@@ -12,6 +12,7 @@ import com.finora.common.exception.BusinessException;
 import com.finora.common.exception.ResourceNotFoundException;
 import com.finora.common.security.CurrentUserService;
 import com.finora.user.entity.UserEntity;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,14 @@ public class BudgetServiceImpl implements BudgetService {
     private final CategoryRepository categoryRepository;
     private final BudgetMapper budgetMapper;
     private final CurrentUserService currentUserService;
+    private final StringRedisTemplate redisTemplate;
+    
+    private void evictInsightCache(UUID userId) {
+        try {
+            redisTemplate.delete("finora:ai-insight:cache:" + userId);
+        } catch (Exception e) {}
+    }
+    
     @Override
     public BudgetResponse create(CreateBudgetRequest request) {
 
@@ -57,6 +66,8 @@ public class BudgetServiceImpl implements BudgetService {
         );
 
         budget = budgetRepository.save(budget);
+        
+        evictInsightCache(currentUser.getId());
 
         return budgetMapper.toResponse(budget);
     }
@@ -119,6 +130,8 @@ public class BudgetServiceImpl implements BudgetService {
         );
 
         budget = budgetRepository.save(budget);
+        
+        evictInsightCache(currentUser.getId());
 
         return budgetMapper.toResponse(budget);
     }
@@ -132,6 +145,8 @@ public class BudgetServiceImpl implements BudgetService {
                 getBudgetOrThrow(id, currentUser);
 
         budgetRepository.delete(budget);
+        
+        evictInsightCache(currentUser.getId());
     }
 
     private void validateBudgetOverlapForCreate(

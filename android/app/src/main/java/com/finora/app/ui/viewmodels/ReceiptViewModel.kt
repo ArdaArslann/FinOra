@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.finora.app.data.network.ConfirmReceiptRequest
 import com.finora.app.data.network.ReceiptApi
 import com.finora.app.data.network.ReceiptDto
+import com.finora.app.data.network.getErrorMessage
 import com.finora.app.domain.model.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -48,14 +49,15 @@ class ReceiptViewModel @Inject constructor(
                     return@launch
                 }
 
-                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+                val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
                 val response = receiptApi.uploadReceipt(body)
                 if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                     _uploadState.value = Resource.Success(response.body()!!.data!!)
                 } else {
-                    _uploadState.value = Resource.Error(response.body()?.error?.message ?: "Upload failed")
+                    _uploadState.value = Resource.Error(response.getErrorMessage() ?: "Upload failed")
                 }
             } catch (e: Exception) {
                 _uploadState.value = Resource.Error(e.localizedMessage ?: "Connection error")
@@ -71,7 +73,7 @@ class ReceiptViewModel @Inject constructor(
                 if (response.isSuccessful && response.body()?.success == true) {
                     _confirmState.value = Resource.Success(Unit)
                 } else {
-                    _confirmState.value = Resource.Error(response.body()?.error?.message ?: "Confirmation failed")
+                    _confirmState.value = Resource.Error(response.getErrorMessage() ?: "Confirmation failed")
                 }
             } catch (e: Exception) {
                 _confirmState.value = Resource.Error(e.localizedMessage ?: "Connection error")

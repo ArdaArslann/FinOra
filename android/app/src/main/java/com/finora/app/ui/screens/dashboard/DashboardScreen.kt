@@ -12,6 +12,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,14 +35,32 @@ fun DashboardScreen(
 ) {
     val summaryState by viewModel.summaryState.collectAsState()
     val insightState by viewModel.insightState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpaceDark)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
+    LaunchedEffect(Unit) {
+        viewModel.fetchDashboardData()
+    }
+
+    LaunchedEffect(summaryState, insightState) {
+        if (summaryState is Resource.Error) {
+            snackbarHostState.showSnackbar(summaryState.message ?: "Failed to load summary")
+        }
+        if (insightState is Resource.Error) {
+            snackbarHostState.showSnackbar(insightState.message ?: "Failed to load insights")
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = SpaceDark
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
         Spacer(modifier = Modifier.height(32.dp))
         
         Text(
@@ -68,7 +91,7 @@ fun DashboardScreen(
                     ) {
                         Text("Total Balance", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("$${data.currentBalance}", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Text("₺${data.currentBalance}", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("${if (data.incomePercentageChange > 0) "+" else ""}${data.incomePercentageChange}% this month", color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
@@ -87,7 +110,7 @@ fun DashboardScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Income", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("$${data.totalIncome}", color = PrimaryNeon, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("₺${data.totalIncome}", color = PrimaryNeon, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 
@@ -97,14 +120,12 @@ fun DashboardScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Expenses", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("$${data.totalExpense}", color = SecondaryNeon, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("₺${data.totalExpense}", color = SecondaryNeon, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         } else if (summaryState is Resource.Error) {
-            Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
-                Text(summaryState.message ?: "Failed to load summary", color = com.finora.app.ui.theme.ErrorRed, fontSize = 16.sp)
-            }
+            // Handled by Snackbar
         }
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -138,9 +159,8 @@ fun DashboardScreen(
                 }
             }
         } else if (insightState is Resource.Error) {
-            Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
-                Text(insightState.message ?: "Failed to load insights", color = com.finora.app.ui.theme.ErrorRed, fontSize = 14.sp)
-            }
+            // Handled by Snackbar
         }
     }
+}
 }

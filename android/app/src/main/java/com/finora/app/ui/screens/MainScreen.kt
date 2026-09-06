@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,14 +29,17 @@ import com.finora.app.ui.theme.PrimaryNeon
 import com.finora.app.ui.theme.SurfaceDark
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onNavigateToLogin: () -> Unit = {}
+) {
     val navController = rememberNavController()
     
     val items = listOf(
         Screen.Dashboard,
         Screen.Transactions,
         Screen.Budgets,
-        Screen.Statistics
+        Screen.Statistics,
+        Screen.Profile
     )
 
     Scaffold(
@@ -51,6 +55,7 @@ fun MainScreen() {
                         Screen.Transactions -> "List"
                         Screen.Budgets -> "Budgets"
                         Screen.Statistics -> "Stats"
+                        Screen.Profile -> "Profile"
                         else -> ""
                     }
                     val icon = when(screen) {
@@ -58,6 +63,7 @@ fun MainScreen() {
                         Screen.Transactions -> Icons.Filled.List
                         Screen.Budgets -> Icons.Filled.Settings
                         Screen.Statistics -> Icons.Filled.Star
+                        Screen.Profile -> Icons.Filled.Person
                         else -> Icons.Filled.Home
                     }
                     NavigationBarItem(
@@ -87,7 +93,13 @@ fun MainScreen() {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(Screen.Receipts.route)
+                    navController.navigate(Screen.Receipts.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 containerColor = PrimaryNeon
             ) {
@@ -105,7 +117,26 @@ fun MainScreen() {
             composable(Screen.Transactions.route) { TransactionScreen() }
             composable(Screen.Budgets.route) { BudgetScreen() }
             composable(Screen.Statistics.route) { StatisticsScreen() }
-            composable(Screen.Receipts.route) { ReceiptScreen() }
+            composable(Screen.Receipts.route) { 
+                ReceiptScreen(
+                    onNavigateHome = {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(0)
+                        }
+                    }
+                ) 
+            }
+            composable(Screen.Profile.route) { 
+                com.finora.app.ui.screens.profile.ProfileScreen(
+                    onNavigateToCategories = { navController.navigate(Screen.Categories.route) },
+                    onLogoutSuccess = onNavigateToLogin
+                )
+            }
+            composable(Screen.Categories.route) {
+                com.finora.app.ui.screens.category.CategoryScreen(
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
         }
     }
 }
