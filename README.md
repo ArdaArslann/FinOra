@@ -20,13 +20,9 @@
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    A["Android app<br/>Kotlin · Compose · Hilt<br/>Retrofit · DataStore"] -->|REST + JWT| B["Spring Boot API<br/>Java 21 · Spring Security"]
-    B --> C[("PostgreSQL 17<br/>Flyway")]
-    B --> D[("Redis 8<br/>cache · rate limit")]
-    B --> E["Gemini Vision<br/>receipts · insights"]
-```
+<p align="center">
+  <img src="docs/architecture.svg" alt="Android app (Kotlin, Jetpack Compose, Hilt, Retrofit) calls the Spring Boot API over REST with JWT; the API uses PostgreSQL with Flyway, Redis for AI cache and rate limiting, and Gemini Vision for receipts and insights" />
+</p>
 
 The backend is organised by feature (`auth`, `transaction`, `budget`, `receipt`, `dashboard`, `statistics`…) with a layered controller → service → repository structure and DTO-based APIs. The Android app follows MVVM with Hilt-injected ViewModels.
 

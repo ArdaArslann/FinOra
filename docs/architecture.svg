@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="300" viewBox="0 0 880 300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#D4AF5A"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="880" height="300" rx="16" fill="#111111"/>
+
+  <!-- Android -->
+  <rect x="24" y="80" width="240" height="140" rx="14" fill="#1E1E1E" stroke="#D4AF5A" stroke-width="1.5"/>
+  <text x="144" y="122" text-anchor="middle" font-size="17" font-weight="700" fill="#FFFFFF">Android app</text>
+  <text x="144" y="152" text-anchor="middle" font-size="13" fill="#BDBDBD">Kotlin · Jetpack Compose</text>
+  <text x="144" y="174" text-anchor="middle" font-size="13" fill="#BDBDBD">Hilt · Retrofit</text>
+  <text x="144" y="196" text-anchor="middle" font-size="13" fill="#BDBDBD">DataStore</text>
+
+  <!-- Android -> API -->
+  <line x1="268" y1="150" x2="346" y2="150" stroke="#D4AF5A" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="307" y="138" text-anchor="middle" font-size="12" font-weight="600" fill="#D4AF5A">REST</text>
+  <text x="307" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#D4AF5A">JWT</text>
+
+  <!-- Spring Boot -->
+  <rect x="350" y="80" width="240" height="140" rx="14" fill="#1E1E1E" stroke="#D4AF5A" stroke-width="1.5"/>
+  <text x="470" y="122" text-anchor="middle" font-size="17" font-weight="700" fill="#FFFFFF">Spring Boot API</text>
+  <text x="470" y="152" text-anchor="middle" font-size="13" fill="#BDBDBD">Java 21 · Spring Security</text>
+  <text x="470" y="174" text-anchor="middle" font-size="13" fill="#BDBDBD">JPA / Hibernate</text>
+  <text x="470" y="196" text-anchor="middle" font-size="13" fill="#BDBDBD">Swagger / OpenAPI</text>
+
+  <!-- API -> services -->
+  <path d="M594,150 C624,150 624,56 650,56" fill="none" stroke="#D4AF5A" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="594" y1="150" x2="650" y2="150" stroke="#D4AF5A" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M594,150 C624,150 624,244 650,244" fill="none" stroke="#D4AF5A" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- PostgreSQL -->
+  <rect x="654" y="20" width="202" height="72" rx="12" fill="#1E1E1E" stroke="#555555" stroke-width="1.5"/>
+  <text x="755" y="50" text-anchor="middle" font-size="15" font-weight="700" fill="#FFFFFF">PostgreSQL 17</text>
+  <text x="755" y="72" text-anchor="middle" font-size="12" fill="#BDBDBD">Flyway migrations</text>
+
+  <!-- Redis -->
+  <rect x="654" y="114" width="202" height="72" rx="12" fill="#1E1E1E" stroke="#555555" stroke-width="1.5"/>
+  <text x="755" y="144" text-anchor="middle" font-size="15" font-weight="700" fill="#FFFFFF">Redis 8</text>
+  <text x="755" y="166" text-anchor="middle" font-size="12" fill="#BDBDBD">AI cache · rate limit</text>
+
+  <!-- Gemini -->
+  <rect x="654" y="208" width="202" height="72" rx="12" fill="#1E1E1E" stroke="#555555" stroke-width="1.5"/>
+  <text x="755" y="238" text-anchor="middle" font-size="15" font-weight="700" fill="#FFFFFF">Gemini Vision</text>
+  <text x="755" y="260" text-anchor="middle" font-size="12" fill="#BDBDBD">receipts · insights</text>
+</svg>
