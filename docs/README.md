@@ -106,6 +106,8 @@ The project is a portfolio-quality, full-stack mobile application following mode
 # 1. Copy and configure environment variables
 cp .env.example .env
 # Edit .env with your values
+# JWT_SECRET must be at least 32 bytes — generate one with:
+#   openssl rand -base64 48
 
 # 2. Start all services
 docker compose up --build
@@ -116,7 +118,7 @@ Required environment variables:
 | Variable | Description |
 |---|---|
 | `DB_PASSWORD` | PostgreSQL password |
-| `JWT_SECRET` | JWT signing secret |
+| `JWT_SECRET` | JWT signing secret (min. 32 bytes, e.g. `openssl rand -base64 48`) |
 | `OPENAI_API_KEY` | OpenAI API key |
 | `GEMINI_API_KEY` | Google Gemini API key |
 
