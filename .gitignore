@@ -4,6 +4,5 @@ backend/receipt-test/
 
 agent-tools/
 .idea/
-backend/src/main/resources/application.yml
 .env
 .DS_Store
