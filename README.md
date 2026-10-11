@@ -1,5 +1,7 @@
 # FinOra
 
+[![CI/CD](https://github.com/ArdaArslann/FinOra/actions/workflows/ci.yml/badge.svg)](https://github.com/ArdaArslann/FinOra/actions/workflows/ci.yml)
+
 **A personal finance app that reads your receipts with AI** — native Android client (Kotlin, Jetpack Compose) on top of a Spring Boot REST API, with Gemini Vision turning a photo of a receipt into a transaction.
 
 <p align="center">
@@ -63,4 +65,4 @@ docker compose up --build
 | **Backend** | Java 21, Spring Boot 3.5, Spring Security, JPA/Hibernate, springdoc-openapi |
 | **Data** | PostgreSQL 17, Redis 8, Flyway |
 | **AI** | Google Gemini (Vision + text), OpenAI |
-| **Infra** | Docker, Docker Compose |
+| **Infra** | Docker, Docker Compose, GitHub Actions, GHCR |
