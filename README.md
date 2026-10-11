@@ -2,16 +2,13 @@
 
 **A personal finance app that reads your receipts with AI** — native Android client (Kotlin, Jetpack Compose) on top of a Spring Boot REST API, with Gemini Vision turning a photo of a receipt into a transaction.
 
-<!--
-Screenshots: capture from the Android emulator, save under docs/screenshots/, then uncomment.
-
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" width="220" alt="Dashboard" />
-  <img src="docs/screenshots/statistics.png" width="220" alt="Statistics" />
-  <img src="docs/screenshots/receipt.png" width="220" alt="Receipt scan" />
-  <img src="docs/screenshots/budgets.png" width="220" alt="Budgets" />
+  <img src="docs/screenshots/dashboard.jpeg" width="160" alt="Dashboard with balance and AI insight" />
+  <img src="docs/screenshots/receipt.jpeg" width="160" alt="AI receipt scanner" />
+  <img src="docs/screenshots/statistics.jpeg" width="160" alt="Statistics with charts and category breakdown" />
+  <img src="docs/screenshots/transactions.jpeg" width="160" alt="Transactions grouped by date" />
+  <img src="docs/screenshots/budgets.jpeg" width="160" alt="Budgets" />
 </p>
--->
 
 ## Features
 
